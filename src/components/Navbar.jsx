@@ -3,7 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import Logo from './Logo';
-import { LogOut, Sun, Moon, Home as HomeIcon } from 'lucide-react';
+import { 
+  LogOut, Sun, Moon, Home as HomeIcon, 
+  Search, ShoppingCart, Layout, Menu, ChevronDown 
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Navbar = () => {
@@ -22,70 +25,97 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white/80 dark:bg-[#1f1f1f]/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50 transition-colors duration-300">
+    <nav className="fixed w-full z-[100] transition-all duration-300 bg-navy-900/90 backdrop-blur-xl border-b border-white/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
-          <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-center gap-2 group">
-              <Logo className="w-12 h-12 group-hover:scale-110 transition-transform" />
-              <span className="text-2xl font-bold text-gray-900 dark:text-[#e5e5e5] hidden sm:block">
-                Dourous-Net
+        <div className="flex justify-between h-20 items-center">
+          
+          {/* Left: Logo & Explore */}
+          <div className="flex items-center gap-10">
+            <Link to="/" className="flex items-center gap-3 group">
+              <Logo className="w-10 h-10 group-hover:rotate-12 transition-transform" />
+              <span className="text-2xl font-black text-white tracking-tighter">
+                Educrat
               </span>
             </Link>
-            
-            <Link 
-              to="/" 
-              className="flex items-center gap-1.5 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-            >
-              <HomeIcon size={18} />
-              <span className="hidden md:inline">Accueil</span>
-            </Link>
+
+            <button className="hidden lg:flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-white text-sm font-bold transition-all border border-white/10">
+              <Layout size={18} className="text-accent-green" />
+              Explore
+            </button>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-4">
+          {/* Center: Nav Links */}
+          <div className="hidden lg:flex items-center gap-8">
+            {['Home', 'Courses', 'Blog', 'Shop', 'Pages', 'Contact'].map((item) => (
+              <Link 
+                key={item}
+                to={item === 'Home' ? '/' : '#'}
+                className="flex items-center gap-1 text-[13px] font-bold text-gray-300 hover:text-white transition-colors"
+              >
+                {item}
+                {item !== 'Contact' && <ChevronDown size={14} className="opacity-50" />}
+              </Link>
+            ))}
+          </div>
+
+          {/* Right: Actions */}
+          <div className="flex items-center gap-3 sm:gap-6">
+            <div className="flex items-center gap-4 text-white opacity-70 hover:opacity-100 transition-opacity">
+              <button className="p-2 hover:bg-white/5 rounded-full transition-colors">
+                <Search size={20} />
+              </button>
+              <div className="relative p-2 hover:bg-white/5 rounded-full transition-colors cursor-pointer">
+                <ShoppingCart size={20} />
+                <span className="absolute top-1 right-1 w-4 h-4 bg-primary-600 rounded-full text-[10px] flex items-center justify-center font-bold">0</span>
+              </div>
+            </div>
+
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-xl bg-gray-50 dark:bg-[#2d2d2d] text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all active:scale-90"
+              className="p-2.5 rounded-xl bg-white/5 text-gray-300 hover:bg-white/10 transition-all active:scale-90 border border-white/10"
               aria-label="Toggle Theme"
             >
               {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
             </button>
 
-            <div className="h-6 w-px bg-gray-100 dark:bg-gray-800 mx-1"></div>
+            <div className="h-6 w-px bg-white/10 mx-1"></div>
 
             {user ? (
-              <div className="flex items-center gap-2 sm:gap-4">
+              <div className="flex items-center gap-4">
                 <Link 
                   to="/dashboard"
-                  className="text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                  className="text-sm font-bold text-white hover:text-accent-green transition-colors"
                 >
                   Dashboard
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-2 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1.5 rounded-xl border border-transparent hover:border-red-100 dark:hover:border-red-900/30 transition-all"
+                  className="p-2.5 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all border border-red-500/20"
                 >
-                  <LogOut size={18} />
-                  <span className="hidden sm:inline">Déconnexion</span>
+                  <LogOut size={20} />
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2 sm:gap-3">
+              <div className="flex items-center gap-3">
                 <Link 
                   to="/login" 
-                  className="text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 px-2 transition-colors"
+                  className="text-sm font-bold text-white hover:text-accent-green transition-colors"
                 >
-                  Connexion
+                  Log In
                 </Link>
                 <Link 
                   to="/signup" 
-                  className="text-sm font-bold bg-primary-600 text-white px-5 py-2.5 rounded-full hover:bg-primary-700 transition-all active:scale-95 shadow-lg shadow-primary-200 dark:shadow-none"
+                  className="text-sm font-bold bg-white text-navy-900 px-6 py-2.5 rounded-xl hover:bg-accent-green hover:text-navy-900 transition-all active:scale-95 shadow-xl shadow-black/20"
                 >
-                  S'inscrire
+                  Sign Up
                 </Link>
               </div>
             )}
+            
+            <button className="lg:hidden p-2 text-white">
+              <Menu size={24} />
+            </button>
           </div>
         </div>
       </div>
