@@ -1,40 +1,34 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { UIProvider } from './context/UIContext';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+
+// Context Providers
+import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
+
+// Components
+import Navbar from './components/Navbar';
+import ProtectedRoute from './components/ProtectedRoute';
+
+// Pages
+import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
-import Home from './pages/Home';
-import Navbar from './components/Navbar';
-import { Toaster } from 'react-hot-toast';
-
-// Protected Route Wrapper
-const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#1f1f1f]">
-        <div className="w-12 h-12 border-4 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-  
-  if (!user) {
-    return <Navigate to="/login" />;
-  }
-  
-  return children;
-};
 
 function App() {
   return (
-    <UIProvider>
+    <ThemeProvider>
       <AuthProvider>
         <Router>
           <div className="min-h-screen bg-white dark:bg-[#1f1f1f] text-gray-900 dark:text-[#e5e5e5] transition-colors duration-300">
-            <Toaster position="top-right" />
+            <Toaster 
+              position="top-right"
+              toastOptions={{
+                duration: 3000,
+                className: 'dark:bg-[#2d2d2d] dark:text-white',
+              }} 
+            />
             <Navbar />
             <Routes>
               <Route path="/" element={<Home />} />
@@ -52,7 +46,7 @@ function App() {
           </div>
         </Router>
       </AuthProvider>
-    </UIProvider>
+    </ThemeProvider>
   );
 }
 

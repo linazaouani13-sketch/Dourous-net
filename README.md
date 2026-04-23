@@ -1,50 +1,56 @@
-# Dourous-Net - Plateforme d'éducation
+# Dourous-Net 🎓
 
-Dourous-Net est une application web moderne permettant aux étudiants de réserver des séances de soutien scolaire avec des professeurs qualifiés.
+Dourous-Net is a premium full-stack education platform built with **React**, **Vite**, **Tailwind CSS**, and **Supabase**. It allows students to book private sessions with expert teachers, upload homework for review, and manage their academic schedule in a sleek, high-performance interface.
 
-## Fonctionnalités
+## 🚀 Key Features
 
-- **Authentification sécurisée** : Inscription et connexion via Supabase Auth.
-- **Liste des professeurs** : Consultez les profils des professeurs, leurs spécialités et tarifs.
-- **Réservation de séances** : Choisissez une date, une heure et téléchargez vos devoirs (PDF).
-- **Suivi des séances** : Visualisez vos séances à venir et accédez à vos documents déposés.
+- **Expert Market**: Browse certified teachers with specific specialities.
+- **Secure Booking**: Intuitive scheduling with future-date validation.
+- **Smart Homework Upload**: Secure PDF management using Supabase Private Storage.
+- **Dynamic Dashboards**: Real-time updates for students.
+- **Dark/Light Mode**: Premium visual experience with persistence.
+- **Robust Auth**: Secure login/signup with automated profile creation.
 
-## Technologies utilisées
+## 🛠️ Tech Stack
 
-- **Frontend** : React + Vite
-- **Styling** : Tailwind CSS
-- **Backend** : Supabase (Database, Auth, Storage)
-- **Icons** : Lucide-React
-- **Date management** : date-fns
+- **Frontend**: React 19, Vite, Tailwind CSS v4.
+- **Backend**: Supabase (Auth, Database, Storage).
+- **Routing**: React Router DOM v7.
+- **Icons**: Lucide React.
+- **Toast Notifications**: React Hot Toast.
 
-## Installation locale
+## ⚙️ Setup Instructions
 
-1. Clonez le dépôt.
-2. Installez les dépendances :
+1. **Clone the repository**:
+   ```bash
+   git clone <repository-url>
+   cd dourous-net
+   ```
+
+2. **Install dependencies**:
    ```bash
    npm install
    ```
-3. Configurez les variables d'environnement dans un fichier `.env` :
-   ```env
-   VITE_SUPABASE_URL=votre_url_supabase
-   VITE_SUPABASE_ANON_KEY=votre_cle_anon_supabase
+
+3. **Configure Environment Variables**:
+   Create a `.env` file in the root directory based on `.env.example`:
+   ```bash
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
    ```
-4. Lancez l'application en mode développement :
+
+4. **Run development server**:
    ```bash
    npm run dev
    ```
 
-## Configuration Supabase requise
+## 🏗️ Architecture
 
-- **Tables** :
-  - `eleves` (id uuid primary key, full_name text, email text)
-  - `professeurs` (id uuid primary key, nom text, specialite text, tarif_horaire numeric)
-  - `seances` (id bigint primary key, eleve_id uuid, professeur_id uuid, date_heure timestamp, devoir_url text, statut text, commentaire text)
-- **Storage** :
-  - Un bucket nommé `devoirs` avec accès public ou via RLS.
-- **RLS Policies** :
-  - Activer RLS sur toutes les tables pour garantir que chaque étudiant ne voit que ses propres données.
+- **Context API**: Managed authentication (`AuthContext`) and theme state (`ThemeContext`).
+- **Supabase Client**: Centralized instance in `src/lib/supabaseClient.js`.
+- **Protected Routes**: HOC logic in `src/components/ProtectedRoute.jsx` ensures only authenticated students access the dashboard.
+- **Responsive Components**: Every UI element is built with mobile-first responsiveness in mind using Tailwind CSS.
 
-## Déploiement
+---
 
-L'application peut être facilement déployée sur Vercel ou Netlify en connectant votre dépôt GitHub.
+Built with ❤️ by Antigravity expert developers.
