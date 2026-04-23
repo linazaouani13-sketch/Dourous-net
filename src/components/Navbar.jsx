@@ -27,8 +27,8 @@ const Navbar = () => {
         <div className="flex justify-between h-16 items-center">
           <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center gap-2 group">
-              <Logo className="w-8 h-8 group-hover:scale-110 transition-transform" />
-              <span className="text-xl font-bold text-gray-900 dark:text-[#e5e5e5] hidden sm:block">
+              <Logo className="w-12 h-12 group-hover:scale-110 transition-transform" />
+              <span className="text-2xl font-bold text-gray-900 dark:text-[#e5e5e5] hidden sm:block">
                 Dourous-Net
               </span>
             </Link>
