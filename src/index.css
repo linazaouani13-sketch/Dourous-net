@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-50: #f5f3ff;
+  --color-primary-100: #ede9fe;
+  --color-primary-200: #ddd6fe;
+  --color-primary-300: #c4b5fd;
+  --color-primary-400: #a78bfa;
+  --color-primary-500: #8b5cf6;
+  --color-primary-600: #7c3aed;
+  --color-primary-700: #6d28d9;
+  --color-primary-800: #5b21b6;
+  --color-primary-900: #4c1d95;
+}
+
+@layer base {
+  :root {
+    --bg-main: #ffffff;
+    --text-main: #1f2937;
+    --card-bg: #ffffff;
+    --border-color: #e5e7eb; /* gray-200 */
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  :root.dark {
+    --bg-main: #1f1f1f;
+    --text-main: #e5e5e5;
+    --card-bg: #2d2d2d;
+    --border-color: #374151; /* gray-700 */
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    @apply antialiased transition-colors duration-300;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-gray-900 dark:text-[#e5e5e5] transition-colors;
+  }
+}
+
+/* Explicit class-based overrides for consistency */
+.dark .bg-white {
+  background-color: #1f1f1f !important;
+}
+
+.dark .bg-slate-50 {
+  background-color: #2d2d2d !important;
+}
+
+.dark .text-slate-900 {
+  color: #e5e5e5 !important;
+}
+
+.dark .text-slate-600, .dark .text-slate-500 {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+.dark .border-slate-100, .dark .border-slate-200, .dark .border-gray-200 {
+  border-color: #374151 !important;
+}
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
