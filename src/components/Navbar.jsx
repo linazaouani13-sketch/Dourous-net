@@ -1,11 +1,11 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import Logo from './Logo';
 import { 
-  LogOut, Sun, Moon, Home as HomeIcon, 
-  Search, ShoppingCart, Layout, Menu, ChevronDown 
+  LogOut, Sun, Moon, Menu, X, 
+  LayoutDashboard, Users, CreditCard, Home as HomeIcon 
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -13,113 +13,169 @@ const Navbar = () => {
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     try {
       await signOut();
-      toast.success('Déconnexion réussie');
+      toast.success('Signed out successfully');
       navigate('/');
     } catch (error) {
-      toast.error('Erreur lors de la déconnexion');
+      toast.error('Error signing out');
     }
   };
 
+  const navLinks = [
+    { name: 'Home', path: '/' },
+    { name: 'Teachers', path: '/teachers' },
+    { name: 'Dashboard', path: '/dashboard' },
+    { name: 'Pricing', path: '/pricing' },
+  ];
+
   return (
-    <nav className="fixed w-full z-[100] transition-all duration-300 bg-navy-900/90 backdrop-blur-xl border-b border-white/5">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-20 items-center">
-          
-          {/* Left: Logo & Explore */}
-          <div className="flex items-center gap-10">
-            <Link to="/" className="flex items-center gap-3 group">
-              <Logo className="w-10 h-10 group-hover:rotate-12 transition-transform" />
-              <span className="text-2xl font-black text-white tracking-tighter">
-                Educrat
-              </span>
+    <>
+      <nav className={`fixed w-full z-[100] transition-all duration-500 ${
+        isScrolled 
+          ? 'bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl py-4 shadow-sm border-b border-gray-100/50 dark:border-white/5' 
+          : 'bg-transparent py-8'
+      }`}>
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+          <div className="flex justify-between items-center">
+            
+            <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
+              <Logo className="h-9" />
             </Link>
 
-            <button className="hidden lg:flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-white text-sm font-bold transition-all border border-white/10">
-              <Layout size={18} className="text-accent-green" />
-              Explore
-            </button>
-          </div>
-
-          {/* Center: Nav Links */}
-          <div className="hidden lg:flex items-center gap-8">
-            {['Home', 'Courses', 'Blog', 'Shop', 'Pages', 'Contact'].map((item) => (
-              <Link 
-                key={item}
-                to={item === 'Home' ? '/' : '#'}
-                className="flex items-center gap-1 text-[13px] font-bold text-gray-300 hover:text-white transition-colors"
-              >
-                {item}
-                {item !== 'Contact' && <ChevronDown size={14} className="opacity-50" />}
-              </Link>
-            ))}
-          </div>
-
-          {/* Right: Actions */}
-          <div className="flex items-center gap-3 sm:gap-6">
-            <div className="flex items-center gap-4 text-white opacity-70 hover:opacity-100 transition-opacity">
-              <button className="p-2 hover:bg-white/5 rounded-full transition-colors">
-                <Search size={20} />
-              </button>
-              <div className="relative p-2 hover:bg-white/5 rounded-full transition-colors cursor-pointer">
-                <ShoppingCart size={20} />
-                <span className="absolute top-1 right-1 w-4 h-4 bg-primary-600 rounded-full text-[10px] flex items-center justify-center font-bold">0</span>
-              </div>
+            {/* Desktop Navigation */}
+            <div className={`hidden ${!isScrolled ? 'md:flex' : ''} items-center gap-8`}>
+              {navLinks.map((link) => (
+                <Link 
+                  key={link.name}
+                  to={link.path}
+                  className={`text-sm font-medium transition-colors ${
+                    location.pathname === link.path 
+                      ? 'text-primary-600' 
+                      : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400'
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              ))}
             </div>
 
-            {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              className="p-2.5 rounded-xl bg-white/5 text-gray-300 hover:bg-white/10 transition-all active:scale-90 border border-white/10"
-              aria-label="Toggle Theme"
-            >
-              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
 
-            <div className="h-6 w-px bg-white/10 mx-1"></div>
+              {user ? (
+                <div className="hidden md:flex items-center gap-4">
+                  <Link 
+                    to="/profile"
+                    className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-white dark:bg-gray-800 overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 flex items-center justify-center">
+                      <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.nom || 'User'}&backgroundColor=f1f5f9&textColor=64748b`} alt="Profile" className="w-full h-full object-cover" />
+                    </div>
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="p-2 rounded-full text-gray-500 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 transition-colors"
+                  >
+                    <LogOut size={20} />
+                  </button>
+                </div>
+              ) : (
+                <div className="hidden md:flex items-center gap-3">
+                  <Link 
+                    to="/login" 
+                    className="hidden sm:block text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary-600 transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <Link 
+                    to="/signup" 
+                    className="btn-primary py-2 px-5 text-sm"
+                  >
+                    Get Started
+                  </Link>
+                </div>
+              )}
+              
+              <button 
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                <Menu size={24} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
 
-            {user ? (
-              <div className="flex items-center gap-4">
+      {/* Mobile Menu Overlay */}
+      <div className={`fixed inset-0 z-[150] md:hidden transition-all duration-300 ${mobileMenuOpen ? 'visible' : 'invisible'}`}>
+        <div 
+          className={`absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity duration-300 ${mobileMenuOpen ? 'opacity-100' : 'opacity-0'}`}
+          onClick={() => setMobileMenuOpen(false)}
+        />
+        <div className={`absolute right-0 top-0 h-full w-64 bg-white dark:bg-gray-900 shadow-2xl transition-transform duration-300 ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+          <div className="p-6">
+            <div className="flex justify-between items-center mb-10">
+              <Logo className="h-6" />
+              <button onClick={() => setMobileMenuOpen(false)} className="text-gray-400 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
+                <X size={24} />
+              </button>
+            </div>
+            <nav className="space-y-4">
+              {navLinks.map((link) => (
                 <Link 
-                  to="/dashboard"
-                  className="text-sm font-bold text-white hover:text-accent-green transition-colors"
+                  key={link.name}
+                  to={link.path}
+                  className={`block text-lg font-bold ${
+                    location.pathname === link.path ? 'text-primary-600' : 'text-gray-600 dark:text-gray-300'
+                  }`}
                 >
-                  Dashboard
+                  {link.name}
                 </Link>
-                <button
-                  onClick={handleLogout}
-                  className="p-2.5 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all border border-red-500/20"
-                >
-                  <LogOut size={20} />
-                </button>
+              ))}
+              <div className="pt-8 border-t border-gray-100 dark:border-gray-800 space-y-4">
+                {!user ? (
+                  <>
+                    <Link to="/login" className="block text-lg font-bold text-gray-600 dark:text-gray-300">Sign In</Link>
+                    <Link to="/signup" className="block btn-primary w-full py-3">Get Started</Link>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/dashboard" className="block text-lg font-bold text-primary-600">Dashboard</Link>
+                    <Link to="/profile" className="block text-lg font-bold text-gray-600 dark:text-gray-300">Profile</Link>
+                    <button onClick={handleLogout} className="block text-lg font-bold text-red-600">Sign Out</button>
+                  </>
+                )}
               </div>
-            ) : (
-              <div className="flex items-center gap-3">
-                <Link 
-                  to="/login" 
-                  className="text-sm font-bold text-white hover:text-accent-green transition-colors"
-                >
-                  Log In
-                </Link>
-                <Link 
-                  to="/signup" 
-                  className="text-sm font-bold bg-white text-navy-900 px-6 py-2.5 rounded-xl hover:bg-accent-green hover:text-navy-900 transition-all active:scale-95 shadow-xl shadow-black/20"
-                >
-                  Sign Up
-                </Link>
-              </div>
-            )}
-            
-            <button className="lg:hidden p-2 text-white">
-              <Menu size={24} />
-            </button>
+            </nav>
           </div>
         </div>
       </div>
-    </nav>
+    </>
   );
 };
 

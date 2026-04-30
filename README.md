@@ -1,56 +1,40 @@
-# Dourous-Net 🎓
+# Dourous-Net 🎓 - Projet Build & Ship
 
-Dourous-Net is a premium full-stack education platform built with **React**, **Vite**, **Tailwind CSS**, and **Supabase**. It allows students to book private sessions with expert teachers, upload homework for review, and manage their academic schedule in a sleek, high-performance interface.
-
-## 🚀 Key Features
-
-- **Expert Market**: Browse certified teachers with specific specialities.
-- **Secure Booking**: Intuitive scheduling with future-date validation.
-- **Smart Homework Upload**: Secure PDF management using Supabase Private Storage.
-- **Dynamic Dashboards**: Real-time updates for students.
-- **Dark/Light Mode**: Premium visual experience with persistence.
-- **Robust Auth**: Secure login/signup with automated profile creation.
-
-## 🛠️ Tech Stack
-
-- **Frontend**: React 19, Vite, Tailwind CSS v4.
-- **Backend**: Supabase (Auth, Database, Storage).
-- **Routing**: React Router DOM v7.
-- **Icons**: Lucide React.
-- **Toast Notifications**: React Hot Toast.
-
-## ⚙️ Setup Instructions
-
-1. **Clone the repository**:
-   ```bash
-   git clone <repository-url>
-   cd dourous-net
-   ```
-
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
-
-3. **Configure Environment Variables**:
-   Create a `.env` file in the root directory based on `.env.example`:
-   ```bash
-   VITE_SUPABASE_URL=your_supabase_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-   ```
-
-4. **Run development server**:
-   ```bash
-   npm run dev
-   ```
-
-## 🏗️ Architecture
-
-- **Context API**: Managed authentication (`AuthContext`) and theme state (`ThemeContext`).
-- **Supabase Client**: Centralized instance in `src/lib/supabaseClient.js`.
-- **Protected Routes**: HOC logic in `src/components/ProtectedRoute.jsx` ensures only authenticated students access the dashboard.
-- **Responsive Components**: Every UI element is built with mobile-first responsiveness in mind using Tailwind CSS.
+Dourous-Net est une plateforme d'éducation "Extranet" permettant aux élèves de réserver des séances avec des professeurs et de soumettre leurs devoirs. Ce projet suit l'architecture **Serverless** moderne en utilisant **React (Vite)**, **Supabase** et **Vercel**.
 
 ---
 
-Built with ❤️ by Antigravity expert developers.
+## 🎯 Mapping du Thème : Éducation
+Conformément aux exigences du projet, l'architecture est modélisée comme suit :
+
+- **Table A (Utilisateurs)** : `eleves` (Gérée via Supabase Auth).
+- **Table B (Ressources)** : `professeurs` (Liste des enseignants disponibles).
+- **Table C (Interactions)** : `seances` (Lien entre élève et professeur avec date et statut).
+- **Storage (Fichiers)** : Bucket `devoirs` (Stockage des scans PDF des devoirs).
+
+---
+
+## 🏛️ Analyse d'Architecture (Rapport Architecte)
+
+### 1. Pourquoi Vercel + Supabase vs Serveur Classique ? (CAPEX/OPEX)
+L'utilisation de Vercel et Supabase transforme le modèle de coût du projet. 
+- **Économie de CAPEX** : Avec un serveur classique, il faudrait investir dans du matériel physique (Serveurs, Racks) ou des instances réservées coûteuses avant même d'avoir un utilisateur. Ici, le CAPEX est de **0$**.
+- **Optimisation de l'OPEX** : Nous passons à un modèle de **"Pay-as-you-go"**. Les coûts opérationnels sont proportionnels à l'utilisation réelle. Pour un projet étudiant ou une startup, c'est la stratégie la plus logique car elle élimine les risques financiers liés au sur-provisionnement.
+
+### 2. Gestion de la Scalabilité : Vercel vs Data Center Local
+Vercel gère la scalabilité de manière **horizontale et automatique** via des "Edge Functions" et un CDN mondial. 
+- Dans un **Data Center local**, la scalabilité est limitée par la climatisation, l'espace physique et la puissance électrique disponible. Ajouter de la capacité prend des semaines.
+- Sur **Vercel**, si le trafic multiplie par 1000 en une seconde, l'infrastructure Serverless s'adapte instantanément sans intervention humaine.
+
+### 3. Données Structurées vs Non-structurées
+- **Données Structurées** : Ce sont les informations stockées dans les tables PostgreSQL de Supabase (`eleves`, `professeurs`, `seances`). Elles suivent un schéma strict (ID, Clés étrangères, Dates).
+- **Données Non-structurées** : Ce sont les fichiers PDF des devoirs stockés dans **Supabase Storage**. Contrairement à une base de données, ces fichiers n'ont pas de structure interne prévisible pour le système, ils sont donc gérés comme des "objets" (BLOBs).
+
+---
+
+
+3. **Déploiement CI/CD** :
+   Connectez votre repo GitHub à Vercel. Chaque `git push` déclenchera un nouveau build.
+
+
+Construit avec l'approche **Vibe Coding** pour le module Architecture Cloud.

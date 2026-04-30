@@ -20,24 +20,33 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = (data) => supabase.auth.signUp(data);
   const signIn = (data) => supabase.auth.signInWithPassword(data);
   const signOut = () => supabase.auth.signOut();
+  const signInWithProvider = (provider) => supabase.auth.signInWithOAuth({ 
+    provider,
+    options: {
+      redirectTo: `${window.location.origin}/dashboard`
+    }
+  });
 
   const value = {
     user,
     loading,
     signUp,
     signIn,
-    signOut
+    signOut,
+    signInWithProvider
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };

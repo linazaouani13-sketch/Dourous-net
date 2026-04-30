@@ -1,45 +1,31 @@
 import React from 'react';
-import { BookOpen, Star, DollarSign } from 'lucide-react';
+import { ChevronRight, Star } from 'lucide-react';
 
 const TeacherCard = ({ teacher, onBook }) => {
   return (
-    <div className="bg-white dark:bg-[#2d2d2d] rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 p-8 flex flex-col justify-between hover:shadow-2xl hover:-translate-y-1 transition-all group">
-      <div>
-        <div className="flex items-center gap-5 mb-6">
-          <div className="w-16 h-16 rounded-2xl bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 flex items-center justify-center font-black text-3xl uppercase group-hover:rotate-6 transition-transform">
-            {teacher.nom.charAt(0)}
-          </div>
-          <div>
-            <h3 className="font-black text-xl text-gray-900 dark:text-[#e5e5e5] tracking-tight">{teacher.nom}</h3>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 border border-primary-100 dark:border-primary-800">
-                {teacher.specialite}
-              </span>
-              <div className="flex items-center gap-1 text-amber-500">
-                <Star size={12} fill="currentColor" />
-                <span className="text-[10px] font-black">4.9</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-3 mb-8">
-          <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed font-medium">
-            Expert certifié avec plus de 10 ans d'expérience. Accompagnement pédagogique sur mesure pour tous les niveaux.
-          </p>
-          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 font-bold">
-            <DollarSign size={18} className="text-green-600" />
-            <span className="text-lg">25.00€ / heure</span>
-          </div>
+    <div className="card-premium p-4 group">
+      <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 mb-5">
+        <img 
+          src={`https://api.dicebear.com/7.x/initials/svg?seed=${teacher.nom}&backgroundColor=f1f5f9&textColor=64748b`} 
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 bg-white" 
+          alt={teacher.nom}
+        />
+        <div className="absolute top-3 right-3 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 shadow-xl border border-white/20 dark:border-white/5">
+          <Star size={14} className="text-yellow-400 fill-yellow-400" />
+          <span className="text-[11px] font-bold">4.9</span>
         </div>
       </div>
+      
+      <div className="text-center space-y-1 mb-6">
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">{teacher.nom}</h3>
+        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em]">{teacher.specialite}</p>
+      </div>
 
-      <button
+      <button 
         onClick={onBook}
-        className="w-full py-4 bg-primary-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-primary-700 transition-all shadow-lg shadow-primary-200 dark:shadow-none active:scale-95 flex items-center justify-center gap-2"
+        className="w-full py-3.5 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-2xl transition-all shadow-lg shadow-primary-500/20 active:scale-[0.98] text-sm"
       >
-        <BookOpen size={18} />
-        Réserver une séance
+        Book Session
       </button>
     </div>
   );
