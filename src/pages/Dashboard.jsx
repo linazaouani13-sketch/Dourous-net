@@ -42,7 +42,10 @@ const Dashboard = () => {
           .select()
           .single();
 
-        if (!insertError) {
+        if (insertError) {
+          console.error("Failed to auto-create student profile:", insertError);
+          toast.error("Database Error: Could not create your student profile. " + insertError.message);
+        } else {
           studentData = newStudent;
         }
       }
