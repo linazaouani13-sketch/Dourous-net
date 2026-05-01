@@ -6,9 +6,11 @@ import toast from 'react-hot-toast';
 
 const BookingModal = ({ teacher, onClose, onSuccess }) => {
   const { user } = useAuth();
-  const [selectedDate, setSelectedDate] = useState('2024-12-01');
+  const today = new Date().toISOString().split('T')[0];
+  const [selectedDate, setSelectedDate] = useState(today);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [file, setFile] = useState(null);
+  const [commentaire, setCommentaire] = useState('');
   const [loading, setLoading] = useState(false);
 
   const timeSlots = [
@@ -39,6 +41,7 @@ const BookingModal = ({ teacher, onClose, onSuccess }) => {
         professeur_id: teacher.id,
         date_heure: dateTimeStr,
         devoir_url: publicUrl,
+        commentaire: commentaire,
         statut: 'reservee',
       });
       if (insertError) throw insertError;
@@ -84,32 +87,18 @@ const BookingModal = ({ teacher, onClose, onSuccess }) => {
 
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="grid md:grid-cols-2 gap-8">
-              {/* Date Selection Placeholder */}
+              {/* Date Selection */}
               <div className="space-y-3">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Select Date</label>
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-3xl p-6 border border-gray-100 dark:border-gray-700">
-                   {/* Simple Calendar Placeholder to match UI */}
-                   <div className="flex items-center justify-between mb-4">
-                      <span className="font-bold text-sm">December 2024</span>
-                      <div className="flex gap-2">
-                        <button type="button" className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">{'<'}</button>
-                        <button type="button" className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">{'>'}</button>
-                      </div>
-                   </div>
-                   <div className="grid grid-cols-7 gap-2 text-center text-[10px] font-bold text-gray-400 mb-2">
-                      <span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span>
-                   </div>
-                   <div className="grid grid-cols-7 gap-2 text-center">
-                      {[25,26,27,28,29,30,1].map((d, i) => (
-                        <button 
-                          key={i} 
-                          type="button" 
-                          className={`py-2 rounded-xl text-xs font-bold transition-all ${d === 1 ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30' : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
-                        >
-                          {d < 10 ? `0${d}` : d}
-                        </button>
-                      ))}
-                   </div>
+                <div className="relative">
+                  <input
+                    type="date"
+                    required
+                    value={selectedDate}
+                    min={new Date().toISOString().split('T')[0]}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="w-full bg-gray-50 dark:bg-gray-800/50 rounded-3xl p-6 border border-gray-100 dark:border-gray-700 font-bold text-gray-900 dark:text-white focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
+                  />
                 </div>
               </div>
 
@@ -173,6 +162,18 @@ const BookingModal = ({ teacher, onClose, onSuccess }) => {
                     </button>
                  </div>
               )}
+            </div>
+
+            {/* Comment Section */}
+            <div className="space-y-3">
+              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Comment (Optional)</label>
+              <textarea
+                value={commentaire}
+                onChange={(e) => setCommentaire(e.target.value)}
+                placeholder="Any specific topics you want to cover?"
+                rows="3"
+                className="w-full bg-gray-50 dark:bg-gray-800/50 rounded-3xl p-6 border border-gray-100 dark:border-gray-700 font-medium text-gray-900 dark:text-white focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all resize-none"
+              />
             </div>
 
             {/* Footer / Summary */}

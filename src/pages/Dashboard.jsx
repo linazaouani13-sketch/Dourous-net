@@ -25,11 +25,28 @@ const Dashboard = () => {
 
   const fetchData = useCallback(async () => {
     try {
-      const { data: studentData } = await supabase
+      let { data: studentData, error: studentError } = await supabase
         .from('eleves')
         .select('*')
         .eq('id', user.id)
         .single();
+
+      if (studentError && studentError.code === 'PGRST116') {
+        const { data: newStudent, error: insertError } = await supabase
+          .from('eleves')
+          .insert({
+            id: user.id,
+            nom: user.user_metadata?.full_name || user.email.split('@')[0],
+            email: user.email
+          })
+          .select()
+          .single();
+
+        if (!insertError) {
+          studentData = newStudent;
+        }
+      }
+
       setStudent(studentData);
 
       const { data: teacherData } = await supabase

@@ -38,9 +38,27 @@ const SessionCard = ({ session }) => {
           </span>
         </div>
         <p className="text-xs text-gray-500 truncate mb-1">Dr. {session.professeurs?.nom}</p>
-        <div className="flex items-center gap-2 text-[10px] text-gray-400 font-medium">
-          <Clock size={12} />
-          <span>{format(date, 'HH:mm')} — {format(date, 'HH:mm')} GMT + 1</span>
+        
+        {session.commentaire && (
+          <p className="text-xs text-gray-600 dark:text-gray-300 italic mb-2 truncate">"{session.commentaire}"</p>
+        )}
+
+        <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center gap-2 text-[10px] text-gray-400 font-medium">
+            <Clock size={12} />
+            <span>{format(date, 'HH:mm')} GMT + 1</span>
+          </div>
+          
+          {session.devoir_url && (
+            <a 
+              href={session.devoir_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-[10px] font-bold text-primary-600 hover:text-primary-700 transition-colors"
+            >
+              <FileText size={12} /> Homework
+            </a>
+          )}
         </div>
       </div>
     </div>
