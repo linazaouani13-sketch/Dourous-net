@@ -40,6 +40,17 @@ const BookingModal = ({ teacher, onClose, onSuccess }) => {
 
       const dateTimeStr = `${selectedDate} ${selectedSlot.split(' ')[0]}:00`;
       
+      // Force create the student profile if it doesn't exist to prevent foreign key errors
+      const { error: profileError } = await supabase.from('eleves').upsert({
+        id: user.id,
+        nom: user.user_metadata?.full_name || user.email.split('@')[0],
+        email: user.email
+      }, { onConflict: 'id' });
+
+      if (profileError) {
+        console.error("Profile Upsert Error:", profileError);
+      }
+
       const { error: insertError } = await supabase.from('seances').insert({
         eleve_id: user.id,
         professeur_id: teacher.id,
