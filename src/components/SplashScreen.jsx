@@ -6,44 +6,108 @@ const SplashScreen = ({ onDismiss }) => {
 
   const handleClick = () => {
     setIsExiting(true);
-    // Wait for fade-out animation before calling onDismiss
-    setTimeout(() => {
-      onDismiss();
-    }, 800);
+    setTimeout(() => onDismiss(), 600);
   };
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsExiting(true);
-      setTimeout(onDismiss, 800);
-    }, 2500); // Auto-dismiss after 2.5 seconds
-
+      setTimeout(onDismiss, 600);
+    }, 2200);
     return () => clearTimeout(timer);
   }, [onDismiss]);
 
   return (
-    <div 
-      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-all duration-1000 
-        ${isExiting ? 'opacity-0 scale-105' : 'opacity-100 scale-100'}
-        bg-[#f8faff] dark:bg-gray-900`}
+    <div
+      onClick={handleClick}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9999,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'var(--color-surface)',
+        cursor: 'pointer',
+        transition: 'opacity 0.6s ease, transform 0.6s ease',
+        opacity: isExiting ? 0 : 1,
+        transform: isExiting ? 'scale(1.05)' : 'scale(1)',
+      }}
     >
-      {/* Background Gradients */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-blue-100/50 dark:bg-blue-900/20 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-100/50 dark:bg-purple-900/20 blur-3xl rounded-full translate-y-1/2 -translate-x-1/2" />
+      {/* Background accents */}
+      <div style={{
+        position: 'absolute',
+        top: '-10%',
+        right: '-10%',
+        width: '400px',
+        height: '400px',
+        background: 'radial-gradient(circle, rgba(0,88,190,0.06) 0%, transparent 70%)',
+        borderRadius: '50%',
+      }} />
+      <div style={{
+        position: 'absolute',
+        bottom: '-10%',
+        left: '-10%',
+        width: '400px',
+        height: '400px',
+        background: 'radial-gradient(circle, rgba(0,108,73,0.06) 0%, transparent 70%)',
+        borderRadius: '50%',
+      }} />
 
-      <div className="relative z-10 flex flex-col items-center animate-in fade-in zoom-in duration-1000">
-        <Logo className="h-32 mb-8" />
-        
+      <div className="animate-fade-in-up" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 1 }}>
+        {/* Icon */}
+        <div style={{
+          width: '64px',
+          height: '64px',
+          borderRadius: 'var(--radius-xl)',
+          backgroundColor: 'var(--color-primary-600)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: '24px',
+          boxShadow: '0 8px 32px rgba(0, 88, 190, 0.25)',
+        }}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <path d="M12 3L1 9L5 11.18V17.18L12 21L19 17.18V11.18L21 10.09V17H23V9L12 3ZM18.82 9L12 12.72L5.18 9L12 5.28L18.82 9ZM17 15.99L12 18.72L7 15.99V12.27L12 15L17 12.27V15.99Z" fill="white"/>
+          </svg>
+        </div>
+
+        <h1 style={{
+          fontSize: '32px',
+          fontWeight: 700,
+          color: 'var(--color-on-surface)',
+          letterSpacing: '-0.02em',
+          marginBottom: '8px',
+        }}>
+          Dourous-Net
+        </h1>
+
+        <p style={{
+          fontSize: '14px',
+          color: 'var(--color-outline)',
+          fontWeight: 500,
+        }}>
+          Learning Portal
+        </p>
+
         {/* Spinner */}
-        <div className="w-10 h-10 border-4 border-primary-100 dark:border-gray-800 border-t-primary-600 rounded-full animate-spin mb-12" />
-
-        <button 
-          onClick={handleClick}
-          className="px-8 py-3 bg-white dark:bg-gray-800 shadow-xl rounded-full text-sm font-bold text-gray-900 dark:text-white hover:scale-105 active:scale-95 transition-all border border-gray-100 dark:border-gray-700"
-        >
-          Begin Learning Journey
-        </button>
+        <div style={{
+          width: '32px',
+          height: '32px',
+          border: '3px solid var(--color-outline-variant)',
+          borderTopColor: 'var(--color-primary-600)',
+          borderRadius: '50%',
+          animation: 'spin 0.8s linear infinite',
+          marginTop: '40px',
+        }} />
       </div>
+
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };

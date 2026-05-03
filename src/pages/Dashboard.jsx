@@ -6,17 +6,18 @@ import TeacherCard from '../components/TeacherCard';
 import SessionCard from '../components/SessionCard';
 import BookingModal from '../components/BookingModal';
 import Footer from '../components/Footer';
-import { 
-  Users, Calendar, Loader2, Sparkles, Plus, Search, 
-  LayoutDashboard, BookOpen, Settings, ChevronRight,
-  Bell, CheckCircle2, Star, Clock, ArrowRight
+import Logo from '../components/Logo';
+import {
+  Users, Calendar, Loader2, Search,
+  LayoutDashboard, BookOpen, Settings, Heart,
+  LogOut, HelpCircle, ChevronRight, Award
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('Overview');
+  const [activeTab, setActiveTab] = useState('Dashboard');
   const [student, setStudent] = useState(null);
   const [teachers, setTeachers] = useState([]);
   const [sessions, setSessions] = useState([]);
@@ -44,7 +45,7 @@ const Dashboard = () => {
 
         if (insertError) {
           console.error("Failed to auto-create student profile:", insertError);
-          toast.error("Database Error: Could not create your student profile. " + insertError.message);
+          toast.error("Database Error: Could not create your student profile.");
         } else {
           studentData = newStudent;
         }
@@ -79,277 +80,449 @@ const Dashboard = () => {
     fetchData();
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast.success('Signed out successfully');
+      navigate('/');
+    } catch (error) {
+      toast.error('Error signing out');
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-gray-950">
-        <div className="w-16 h-16 border-4 border-primary-100 border-t-primary-600 rounded-full animate-spin mb-4" />
-        <p className="text-gray-500 font-medium animate-pulse">Initializing Hub...</p>
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'var(--color-surface)',
+      }}>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          border: '3px solid var(--color-outline-variant)',
+          borderTopColor: 'var(--color-primary-600)',
+          borderRadius: '50%',
+          animation: 'spin 0.8s linear infinite',
+          marginBottom: '16px',
+        }} />
+        <p style={{ color: 'var(--color-outline)', fontSize: '14px', fontWeight: 500 }}>
+          Loading your dashboard...
+        </p>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
   const sidebarLinks = [
-    { name: 'Overview', icon: <LayoutDashboard size={22} /> },
-    { name: 'My Sessions', icon: <Calendar size={22} /> },
-    { name: 'Browse Teachers', icon: <Users size={22} /> },
-    { name: 'Resources', icon: <BookOpen size={22} /> },
-    { name: 'Settings', icon: <Settings size={22} /> },
+    { name: 'Dashboard', icon: <LayoutDashboard size={20} /> },
+    { name: 'My Sessions', icon: <Calendar size={20} /> },
+    { name: 'Find Teachers', icon: <Users size={20} /> },
+    { name: 'Homework', icon: <BookOpen size={20} /> },
+    { name: 'Settings', icon: <Settings size={20} /> },
   ];
 
+  const displayName = student?.full_name?.split(' ')[0] || student?.nom?.split(' ')[0] || user.email.split('@')[0];
+
   return (
-    <div className="min-h-screen bg-[#fcfcfd] dark:bg-gray-950 flex">
-      
-      {/* Premium Sidebar */}
-      <aside className="w-80 hidden xl:flex flex-col border-r border-gray-100/50 dark:border-white/5 bg-white/50 dark:bg-black/20 backdrop-blur-3xl pt-32 pb-10 px-8 fixed h-full z-40 transition-all">
-        <div className="flex-1">
-          <div className="px-4 mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Learning Hub</h2>
-            <div className="flex items-center gap-2 mt-2">
-              <span className="w-2 h-2 rounded-full bg-success-500 animate-pulse" />
-              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">Active Student</p>
+    <div style={{ minHeight: '100vh', display: 'flex', backgroundColor: 'var(--color-surface)' }}>
+
+      {/* ═══ SIDEBAR ═══ */}
+      <aside className="sidebar" style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+      }}>
+        <div>
+          {/* Brand */}
+          <div style={{ padding: '8px 16px', marginBottom: '32px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+              <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-primary-600)' }}>
+                Dourous-Net
+              </span>
             </div>
+            <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-outline)' }}>
+              LEARNING PORTAL
+            </p>
           </div>
-          
-          <nav className="space-y-2">
+
+          {/* Nav Links */}
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             {sidebarLinks.map((link) => (
               <button
                 key={link.name}
-                onClick={() => link.path ? navigate(link.path) : setActiveTab(link.name)}
-                className={`w-full flex items-center gap-4 px-6 py-4 rounded-[1.5rem] text-sm font-bold transition-all duration-300 group ${
-                  activeTab === link.name
-                    ? 'bg-primary-600 text-white shadow-2xl shadow-primary-600/30' 
-                    : 'text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5'
-                }`}
+                onClick={() => setActiveTab(link.name)}
+                className={`sidebar-link ${activeTab === link.name ? 'sidebar-link--active' : ''}`}
               >
-                <span className={`${activeTab === link.name ? 'scale-110' : 'group-hover:scale-110'} transition-transform`}>
-                  {link.icon}
-                </span>
+                {link.icon}
                 {link.name}
               </button>
             ))}
           </nav>
         </div>
 
-        <div className="mt-auto px-2">
+        {/* Bottom Section */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {/* CTA Card */}
+          <div style={{
+            backgroundColor: 'var(--color-primary-600)',
+            borderRadius: 'var(--radius-xl)',
+            padding: '20px 16px',
+            marginBottom: '8px',
+          }}>
+            <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.8)', marginBottom: '12px' }}>
+              Ready to learn?
+            </p>
+            <button
+              onClick={() => setActiveTab('Find Teachers')}
+              style={{
+                width: '100%',
+                padding: '10px',
+                backgroundColor: '#ffffff',
+                color: 'var(--color-primary-600)',
+                border: 'none',
+                borderRadius: 'var(--radius-full)',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              Book a Session
+            </button>
+          </div>
 
-          <button 
-            onClick={() => navigate('/teachers')}
-            className="w-full py-5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-2xl flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-gray-900/10 dark:shadow-white/5"
+          <button
+            onClick={() => toast('Help Center coming soon!', { icon: '❓' })}
+            className="sidebar-link"
           >
-            <Plus size={20} />
-            <span>New Booking</span>
+            <HelpCircle size={20} />
+            Help Center
+          </button>
+          <button onClick={handleLogout} className="sidebar-link" style={{ color: 'var(--color-on-surface-variant)' }}>
+            <LogOut size={20} />
+            Logout
           </button>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 xl:ml-80 pt-40 pb-20 px-6 lg:px-12 xl:px-16">
-        <div className="max-w-[1400px] mx-auto">
-          
-          {activeTab === 'Overview' && (
-            <div className="grid lg:grid-cols-12 gap-12 lg:gap-16">
-              
-              {/* Left & Middle: Activity & Marketplace (8 columns) */}
-              <div className="lg:col-span-8 space-y-16">
-                
-                {/* Modern Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                  <div className="animate-in fade-in slide-in-from-left duration-700">
-                    <h1 className="text-5xl lg:text-7xl font-bold text-gray-900 dark:text-white tracking-tighter leading-[0.9]">
-                      Hello, <br />
-                      <span className="gradient-text">{student?.full_name?.split(' ')[0] || user.email.split('@')[0]}</span>
-                    </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-6 text-xl font-medium max-w-sm leading-relaxed">
-                      You have <span className="text-gray-900 dark:text-white font-bold">{sessions.length} sessions</span> lined up for this week.
-                    </p>
-                  </div>
+      {/* ═══ MAIN CONTENT ═══ */}
+      <main style={{
+        flex: 1,
+        marginLeft: '240px',
+        padding: '32px 40px',
+        minHeight: '100vh',
+      }}>
+        {/* Top Bar */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '40px',
+        }}>
+          <div>
+            <h1 style={{
+              fontSize: '28px',
+              fontWeight: 700,
+              color: 'var(--color-on-surface)',
+              letterSpacing: '-0.02em',
+            }}>
+              Welcome back, {displayName}!
+            </h1>
+            <p style={{ fontSize: '14px', color: 'var(--color-on-surface-variant)', marginTop: '4px' }}>
+              You have {sessions.length} sessions scheduled for this week.
+            </p>
+          </div>
 
-                  <div className="flex items-center gap-4 animate-in fade-in slide-in-from-right duration-700">
-                     <button 
-                      onClick={() => toast('No new notifications', { icon: '🔔' })}
-                      className="p-4 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 text-gray-400 hover:text-primary-600 hover:border-primary-200 transition-all shadow-sm"
-                     >
-                       <Bell size={24} />
-                     </button>
-                     <div className="p-1 pr-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-full flex items-center gap-3 shadow-sm hover:shadow-md transition-all cursor-pointer">
-                        <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 font-bold">
-                          {user.email[0].toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-widest leading-none">Profile</p>
-                          <p className="text-[10px] text-gray-400 font-medium">Verified</p>
-                        </div>
-                     </div>
-                  </div>
-                </div>
-
-                {/* Stats Bar */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                   {[
-                     { label: 'Hours Studied', value: '124', icon: <Clock size={20} />, color: 'text-primary-600' },
-                     { label: 'Courses', value: '12', icon: <BookOpen size={20} />, color: 'text-success-600' },
-                     { label: 'Teachers', value: '4', icon: <Users size={20} />, color: 'text-orange-600' },
-                     { label: 'Average Score', value: '98%', icon: <Star size={20} />, color: 'text-yellow-600' },
-                   ].map((stat, i) => (
-                      <div key={i} className="bg-white dark:bg-gray-900 p-6 rounded-[2rem] border border-gray-50 dark:border-white/5 shadow-sm hover:shadow-xl hover:shadow-blue-500/5 transition-all">
-                         <div className={`${stat.color} mb-4`}>{stat.icon}</div>
-                         <p className="text-2xl font-bold mb-1">{stat.value}</p>
-                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{stat.label}</p>
-                      </div>
-                   ))}
-                </div>
-
-                {/* Teachers Section */}
-                <section className="space-y-8 pt-8">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-3xl font-bold tracking-tight">Top Rated Teachers</h2>
-                      <p className="text-sm text-gray-500 font-medium mt-1">Hand-picked educators just for your level.</p>
-                    </div>
-                    <button 
-                      onClick={() => setActiveTab('Browse Teachers')}
-                      className="btn-secondary py-3 px-6 text-xs flex items-center gap-2 group"
-                    >
-                      Explore All <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                    </button>
-                  </div>
-
-                  <div className="grid sm:grid-cols-2 gap-8">
-                    {teachers.slice(0, 4).map(teacher => (
-                      <TeacherCard 
-                        key={teacher.id} 
-                        teacher={teacher} 
-                        onBook={() => setSelectedTeacher(teacher)} 
-                      />
-                    ))}
-                  </div>
-                </section>
-              </div>
-
-              {/* Right Sidebar: Upcoming (4 columns) */}
-              <div className="lg:col-span-4 space-y-8">
-                 <div className="sticky top-40 space-y-8">
-                    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 rounded-[2.5rem] p-8 shadow-2xl shadow-blue-500/5">
-                      <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-xl font-bold">Upcoming Sessions</h2>
-                        <div className="w-8 h-8 rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center text-primary-600">
-                           <Calendar size={16} />
-                        </div>
-                      </div>
-
-                      <div className="space-y-8">
-                        {sessions.length > 0 ? (
-                          <>
-                            <div className="space-y-6">
-                              {sessions.slice(0, 3).map(session => (
-                                <SessionCard key={session.id} session={session} />
-                              ))}
-                            </div>
-                            
-                            <div className="pt-8 border-t border-gray-50 dark:border-white/5">
-                              <div className="bg-primary-50 dark:bg-primary-900/20 p-6 rounded-3xl relative overflow-hidden group cursor-pointer">
-                                <div className="relative z-10">
-                                  <p className="text-[10px] font-bold text-primary-600 uppercase tracking-widest mb-1">Next Class</p>
-                                  <p className="text-base font-bold text-gray-900 dark:text-white mb-4">
-                                    {sessions[0]?.professeurs?.specialite || "Ready to Learn?"}
-                                  </p>
-                                  <button className="w-full py-3 bg-primary-600 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 group-hover:scale-105 transition-all">
-                                     Join Meeting <ArrowRight size={14} />
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </>
-                        ) : (
-                          <div className="py-12 text-center">
-                            <div className="w-16 h-16 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
-                              <Calendar size={32} />
-                            </div>
-                            <p className="text-gray-400 font-medium">No sessions scheduled.</p>
-                            <button onClick={() => setActiveTab('Browse Teachers')} className="text-primary-600 text-xs font-bold mt-2 hover:underline">Book your first one</button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Quick Help Card */}
-                    <div className="bg-gray-900 dark:bg-white rounded-[2.5rem] p-8 text-white dark:text-gray-900 relative overflow-hidden">
-                       <Users className="absolute -bottom-4 -right-4 text-white/10 dark:text-gray-900/10" size={120} />
-                       <h3 className="text-xl font-bold mb-2">Need Help?</h3>
-                       <p className="text-sm opacity-70 mb-6 font-medium">Our support team is available 24/7 to help you with your learning path.</p>
-                       <button className="px-6 py-3 bg-white/10 dark:bg-gray-900/10 border border-white/20 dark:border-gray-900/20 rounded-xl text-xs font-bold hover:bg-white/20 transition-all">
-                          Contact Support
-                       </button>
-                    </div>
-                 </div>
-              </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {/* Search */}
+            <div style={{ position: 'relative' }}>
+              <Search size={16} style={{
+                position: 'absolute',
+                right: '14px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--color-outline)',
+              }} />
+              <input
+                type="text"
+                placeholder="Search for courses..."
+                className="input-field"
+                style={{
+                  width: '240px',
+                  padding: '10px 40px 10px 16px',
+                  fontSize: '13px',
+                  borderRadius: 'var(--radius-full)',
+                }}
+              />
             </div>
-          )}
 
-          {activeTab === 'Browse Teachers' && (
-            <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-              <div className="mb-12">
-                <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white tracking-tight mb-4">Browse Teachers</h1>
-                <p className="text-gray-500 dark:text-gray-400 text-lg">Find the perfect educator to help you master your subjects.</p>
+            {/* Avatar */}
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: 'var(--radius-full)',
+              overflow: 'hidden',
+              border: '2px solid var(--color-outline-variant)',
+              cursor: 'pointer',
+            }}
+              onClick={() => navigate('/profile')}
+            >
+              <img
+                src={`https://api.dicebear.com/7.x/initials/svg?seed=${displayName}&backgroundColor=f2f3fd&textColor=424754`}
+                alt="Profile"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* ═══ OVERVIEW TAB ═══ */}
+        {(activeTab === 'Dashboard' || activeTab === 'My Sessions') && (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 340px',
+            gap: '32px',
+            alignItems: 'start',
+          }}>
+            {/* Left: Teachers */}
+            <div>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '20px',
+              }}>
+                <h2 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
+                  Available Teachers
+                </h2>
+                <button
+                  onClick={() => setActiveTab('Find Teachers')}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: 'var(--color-primary-600)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  View all <ChevronRight size={16} />
+                </button>
               </div>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {teachers.map(teacher => (
-                  <TeacherCard 
-                    key={teacher.id} 
-                    teacher={teacher} 
-                    onBook={() => setSelectedTeacher(teacher)} 
+
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '16px',
+              }}>
+                {teachers.slice(0, 4).map(teacher => (
+                  <TeacherCard
+                    key={teacher.id}
+                    teacher={teacher}
+                    onBook={() => setSelectedTeacher(teacher)}
                   />
                 ))}
               </div>
             </div>
-          )}
 
-          {activeTab === 'Resources' && (
-            <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 text-center py-20">
-              <BookOpen className="mx-auto text-gray-300 dark:text-gray-700 mb-6" size={80} />
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Learning Resources</h2>
-              <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">Access your downloaded materials, PDFs, and past session recordings here. Coming soon!</p>
-            </div>
-          )}
+            {/* Right: Upcoming Sessions + Progress */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* Upcoming Sessions */}
+              <div className="card-static" style={{ padding: '20px' }}>
+                <h3 style={{
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  color: 'var(--color-on-surface)',
+                  marginBottom: '16px',
+                }}>
+                  Upcoming Sessions
+                </h3>
 
-          {activeTab === 'Settings' && (
-            <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-              <div className="mb-12">
-                <h1 className="text-4xl font-bold text-gray-900 dark:text-white tracking-tight mb-4">Account Settings</h1>
-                <p className="text-gray-500 dark:text-gray-400 text-lg">Manage your personal information and preferences.</p>
+                {sessions.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {sessions.slice(0, 3).map(session => (
+                      <SessionCard key={session.id} session={session} />
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '32px 0' }}>
+                    <Calendar size={40} style={{ color: 'var(--color-outline-variant)', marginBottom: '12px' }} />
+                    <p style={{ fontSize: '14px', color: 'var(--color-outline)' }}>No sessions scheduled.</p>
+                    <button
+                      onClick={() => setActiveTab('Find Teachers')}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        color: 'var(--color-primary-600)',
+                        cursor: 'pointer',
+                        marginTop: '8px',
+                      }}
+                    >
+                      Book your first one
+                    </button>
+                  </div>
+                )}
               </div>
-              <div className="bg-white dark:bg-gray-900 rounded-[2rem] border border-gray-100 dark:border-white/5 p-8 max-w-2xl">
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Full Name</label>
-                    <input type="text" className="input-field" defaultValue={student?.full_name} disabled />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Email Address</label>
-                    <input type="email" className="input-field" defaultValue={user.email} disabled />
-                  </div>
-                  <div>
-                    <button className="btn-primary w-full py-4" onClick={() => toast.success('Settings updated!')}>Save Changes</button>
-                  </div>
+
+              {/* Overall Progress Card */}
+              <div style={{
+                backgroundColor: 'var(--color-primary-600)',
+                borderRadius: 'var(--radius-xl)',
+                padding: '20px',
+                color: '#ffffff',
+              }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '12px',
+                }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff' }}>
+                    Overall Progress
+                  </h3>
+                  <span style={{
+                    padding: '4px 12px',
+                    backgroundColor: 'rgba(255,255,255,0.2)',
+                    borderRadius: 'var(--radius-full)',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                  }}>
+                    Level 4
+                  </span>
                 </div>
+
+                <p style={{ fontSize: '13px', opacity: 0.8, marginBottom: '12px' }}>
+                  {sessions.length} of 5 lessons completed this month
+                </p>
+
+                {/* Progress bar */}
+                <div style={{
+                  width: '100%',
+                  height: '8px',
+                  backgroundColor: 'rgba(255,255,255,0.2)',
+                  borderRadius: 'var(--radius-full)',
+                  overflow: 'hidden',
+                  marginBottom: '16px',
+                }}>
+                  <div style={{
+                    height: '100%',
+                    width: `${Math.min((sessions.length / 5) * 100, 100)}%`,
+                    background: 'linear-gradient(90deg, #4edea3, #6cf8bb)',
+                    borderRadius: 'var(--radius-full)',
+                    transition: 'width 0.6s ease',
+                  }} />
+                </div>
+
+                <button style={{
+                  width: '100%',
+                  padding: '10px',
+                  backgroundColor: 'rgba(255,255,255,0.15)',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  borderRadius: 'var(--radius-full)',
+                  color: '#ffffff',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'background 0.2s',
+                }}>
+                  My Certificates
+                </button>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
+        {/* ═══ FIND TEACHERS TAB ═══ */}
+        {activeTab === 'Find Teachers' && (
+          <div className="animate-fade-in">
+            <div style={{ marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: '8px' }}>
+                Browse Teachers
+              </h2>
+              <p style={{ fontSize: '14px', color: 'var(--color-on-surface-variant)' }}>
+                Find the perfect educator to help you master your subjects.
+              </p>
+            </div>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '16px',
+            }}>
+              {teachers.map(teacher => (
+                <TeacherCard
+                  key={teacher.id}
+                  teacher={teacher}
+                  onBook={() => setSelectedTeacher(teacher)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ═══ HOMEWORK TAB ═══ */}
+        {activeTab === 'Homework' && (
+          <div className="animate-fade-in" style={{ textAlign: 'center', padding: '80px 0' }}>
+            <BookOpen size={64} style={{ color: 'var(--color-outline-variant)', marginBottom: '16px' }} />
+            <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: '8px' }}>
+              Homework & Resources
+            </h2>
+            <p style={{ fontSize: '14px', color: 'var(--color-on-surface-variant)', maxWidth: '400px', margin: '0 auto' }}>
+              Access your uploaded materials, PDFs, and past session recordings here. Coming soon!
+            </p>
+          </div>
+        )}
+
+        {/* ═══ SETTINGS TAB ═══ */}
+        {activeTab === 'Settings' && (
+          <div className="animate-fade-in">
+            <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: '24px' }}>
+              Account Settings
+            </h2>
+            <div className="card-static" style={{ padding: '24px', maxWidth: '560px' }}>
+              <div style={{ marginBottom: '20px' }}>
+                <label className="label-caps" style={{ display: 'block', marginBottom: '8px' }}>Full Name</label>
+                <input type="text" className="input-field" defaultValue={student?.full_name || student?.nom} disabled />
+              </div>
+              <div style={{ marginBottom: '24px' }}>
+                <label className="label-caps" style={{ display: 'block', marginBottom: '8px' }}>Email Address</label>
+                <input type="email" className="input-field" defaultValue={user.email} disabled />
+              </div>
+              <button
+                className="btn-primary"
+                style={{ width: '100%', padding: '14px' }}
+                onClick={() => toast.success('Settings updated!')}
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Footer */}
+        <div style={{ marginTop: '60px' }}>
+          <Footer />
         </div>
       </main>
 
       {/* Booking Modal */}
       {selectedTeacher && (
-        <BookingModal 
-          teacher={selectedTeacher} 
-          onClose={() => setSelectedTeacher(null)} 
+        <BookingModal
+          teacher={selectedTeacher}
+          onClose={() => setSelectedTeacher(null)}
           onSuccess={handleBookingSuccess}
         />
       )}
     </div>
   );
 };
-
 
 export default Dashboard;

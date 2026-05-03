@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { User, Mail, Phone, Calendar, ShieldCheck, Edit3 } from 'lucide-react';
+import Footer from '../components/Footer';
 import toast from 'react-hot-toast';
 
 const Profile = () => {
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  
-  // Dummy profile state for demonstration
+
   const [profileData, setProfileData] = useState({
-    firstName: user?.user_metadata?.first_name || 'Student',
+    firstName: user?.user_metadata?.first_name || user?.user_metadata?.full_name?.split(' ')[0] || 'Student',
     lastName: user?.user_metadata?.last_name || '',
     phone: user?.user_metadata?.phone || '+1 234 567 8900',
     bio: 'Passionate learner eager to improve my skills.'
@@ -21,131 +21,135 @@ const Profile = () => {
     toast.success('Profile updated successfully!');
   };
 
+  const displayName = `${profileData.firstName} ${profileData.lastName}`.trim();
+
   return (
-    <div className="min-h-screen pt-32 pb-20 px-4 bg-gray-50 dark:bg-gray-950">
-      <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
-        
-        {/* Header Section */}
-        <div className="card-premium p-8 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-primary-600 to-primary-400 opacity-20"></div>
-          
-          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6 mt-12">
-            <div className="relative">
-              <div className="w-32 h-32 rounded-3xl bg-white p-2 shadow-xl border-4 border-white dark:border-gray-800 flex items-center justify-center overflow-hidden">
-                <img 
-                  src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.nom || 'User'}&backgroundColor=f1f5f9&textColor=64748b`} 
-                  alt="Profile" 
-                  className="w-full h-full object-cover"
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--color-surface)' }}>
+      <div className="container-max" style={{ paddingTop: '100px', paddingBottom: '60px', flex: 1, maxWidth: '800px' }}>
+
+        {/* Profile Header Card */}
+        <div className="card-static animate-fade-in-up" style={{ padding: '32px', marginBottom: '24px', position: 'relative', overflow: 'hidden' }}>
+          {/* Gradient banner */}
+          <div style={{
+            position: 'absolute', top: 0, left: 0, right: 0, height: '80px',
+            background: 'linear-gradient(135deg, var(--color-primary-600), var(--color-primary-400))',
+            opacity: 0.1,
+          }} />
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', position: 'relative', zIndex: 1, marginTop: '32px' }}>
+            {/* Avatar */}
+            <div style={{ position: 'relative' }}>
+              <div style={{
+                width: '80px', height: '80px', borderRadius: 'var(--radius-xl)',
+                border: '3px solid var(--color-surface-container-lowest)',
+                overflow: 'hidden', backgroundColor: 'var(--color-primary-50)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: 'var(--shadow-md)',
+              }}>
+                <img
+                  src={`https://api.dicebear.com/7.x/initials/svg?seed=${displayName}&backgroundColor=f2f3fd&textColor=424754`}
+                  alt="Profile"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               </div>
-              <button className="absolute bottom-0 right-0 p-2 bg-primary-600 text-white rounded-full shadow-lg hover:bg-primary-700 transition-colors">
-                <Edit3 size={16} />
+              <button style={{
+                position: 'absolute', bottom: '-4px', right: '-4px',
+                width: '28px', height: '28px', borderRadius: 'var(--radius-full)',
+                backgroundColor: 'var(--color-primary-600)', color: '#fff',
+                border: '2px solid var(--color-surface-container-lowest)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer',
+              }}>
+                <Edit3 size={12} />
               </button>
             </div>
-            
-            <div className="flex-1 space-y-2">
-              <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {profileData.firstName} {profileData.lastName}
-                </h1>
-                <span className="px-3 py-1 bg-success-100 text-success-700 text-xs font-bold rounded-full flex items-center gap-1">
-                  <ShieldCheck size={14} /> Active
+
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+                <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-on-surface)' }}>{displayName}</h1>
+                <span className="tag tag-secondary" style={{ fontSize: '10px' }}>
+                  <ShieldCheck size={12} style={{ marginRight: '4px' }} /> Active
                 </span>
               </div>
-              <p className="text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                <Mail size={16} /> {user?.email}
+              <p style={{ fontSize: '14px', color: 'var(--color-on-surface-variant)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Mail size={14} /> {user?.email}
               </p>
-              <p className="text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                <Calendar size={16} /> Joined recently
+              <p style={{ fontSize: '13px', color: 'var(--color-outline)', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+                <Calendar size={14} /> Joined recently
               </p>
             </div>
-            
-            <button 
-              onClick={() => setIsEditing(!isEditing)}
-              className="btn-secondary px-6 py-2"
-            >
+
+            <button onClick={() => setIsEditing(!isEditing)} className="btn-secondary" style={{ padding: '10px 20px', fontSize: '13px' }}>
               {isEditing ? 'Cancel' : 'Edit Profile'}
             </button>
           </div>
         </div>
 
-        {/* Info Section */}
-        <div className="card-premium p-8">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 border-b border-gray-100 dark:border-gray-800 pb-4">
+        {/* Info Card */}
+        <div className="card-static animate-fade-in-up delay-100" style={{ padding: '32px' }}>
+          <h2 style={{
+            fontSize: '18px', fontWeight: 700, color: 'var(--color-on-surface)',
+            marginBottom: '24px', paddingBottom: '16px',
+            borderBottom: '1px solid var(--color-outline-variant)',
+          }}>
             Personal Information
           </h2>
-          
+
           {isEditing ? (
-            <form onSubmit={handleSave} className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700 dark:text-gray-300">First Name</label>
-                  <input 
-                    type="text" 
-                    value={profileData.firstName}
-                    onChange={(e) => setProfileData({...profileData, firstName: e.target.value})}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-primary-500 transition-all outline-none"
-                  />
+            <form onSubmit={handleSave}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+                <div>
+                  <label className="label-caps" style={{ display: 'block', marginBottom: '8px' }}>First Name</label>
+                  <input type="text" className="input-field" value={profileData.firstName}
+                    onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })} />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Last Name</label>
-                  <input 
-                    type="text" 
-                    value={profileData.lastName}
-                    onChange={(e) => setProfileData({...profileData, lastName: e.target.value})}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-primary-500 transition-all outline-none"
-                  />
+                <div>
+                  <label className="label-caps" style={{ display: 'block', marginBottom: '8px' }}>Last Name</label>
+                  <input type="text" className="input-field" value={profileData.lastName}
+                    onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })} />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Phone</label>
-                  <input 
-                    type="tel" 
-                    value={profileData.phone}
-                    onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-primary-500 transition-all outline-none"
-                  />
+                <div>
+                  <label className="label-caps" style={{ display: 'block', marginBottom: '8px' }}>Phone</label>
+                  <input type="tel" className="input-field" value={profileData.phone}
+                    onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })} />
                 </div>
-                <div className="space-y-2 md:col-span-2">
-                  <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Bio</label>
-                  <textarea 
-                    rows={4}
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label className="label-caps" style={{ display: 'block', marginBottom: '8px' }}>Bio</label>
+                  <textarea className="input-field" rows={3} style={{ resize: 'none', fontFamily: 'var(--font-body)' }}
                     value={profileData.bio}
-                    onChange={(e) => setProfileData({...profileData, bio: e.target.value})}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-primary-500 transition-all outline-none resize-none"
-                  ></textarea>
+                    onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })} />
                 </div>
               </div>
-              <div className="flex justify-end pt-4 border-t border-gray-100 dark:border-gray-800">
-                <button type="submit" className="btn-primary px-8 py-3">Save Changes</button>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid var(--color-outline-variant)' }}>
+                <button type="submit" className="btn-primary" style={{ padding: '12px 32px' }}>Save Changes</button>
               </div>
             </form>
           ) : (
-            <div className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Full Name</h3>
-                  <p className="text-gray-900 dark:text-white font-medium">{profileData.firstName} {profileData.lastName || ''}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Email Address</h3>
-                  <p className="text-gray-900 dark:text-white font-medium">{user?.email}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Phone Number</h3>
-                  <p className="text-gray-900 dark:text-white font-medium flex items-center gap-2">
-                    <Phone size={16} className="text-gray-400" /> {profileData.phone}
-                  </p>
-                </div>
-                <div className="md:col-span-2">
-                  <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Bio</h3>
-                  <p className="text-gray-900 dark:text-white font-medium">{profileData.bio}</p>
-                </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+              <div>
+                <p className="label-caps" style={{ marginBottom: '6px', color: 'var(--color-outline)' }}>Full Name</p>
+                <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--color-on-surface)' }}>{displayName}</p>
+              </div>
+              <div>
+                <p className="label-caps" style={{ marginBottom: '6px', color: 'var(--color-outline)' }}>Email Address</p>
+                <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--color-on-surface)' }}>{user?.email}</p>
+              </div>
+              <div>
+                <p className="label-caps" style={{ marginBottom: '6px', color: 'var(--color-outline)' }}>Phone Number</p>
+                <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--color-on-surface)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Phone size={14} style={{ color: 'var(--color-outline)' }} /> {profileData.phone}
+                </p>
+              </div>
+              <div style={{ gridColumn: 'span 2' }}>
+                <p className="label-caps" style={{ marginBottom: '6px', color: 'var(--color-outline)' }}>Bio</p>
+                <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--color-on-surface)', lineHeight: 1.6 }}>{profileData.bio}</p>
               </div>
             </div>
           )}
         </div>
-
       </div>
+
+      <Footer />
     </div>
   );
 };

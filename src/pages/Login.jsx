@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, Loader2, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 import Logo from '../components/Logo';
 import toast from 'react-hot-toast';
 
@@ -16,11 +16,11 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       const { error } = await signIn({ email, password });
       if (error) throw error;
-      
+
       toast.success('Welcome back!');
       navigate('/dashboard');
     } catch (error) {
@@ -31,140 +31,299 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-[#fcfcfd] dark:bg-gray-950">
-      
-      {/* Left Side: Brand Section */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-center px-12 xl:px-24 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
-           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-500 rounded-full blur-3xl" />
-           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-success-500 rounded-full blur-3xl" />
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      backgroundColor: 'var(--color-surface)',
+    }}>
+      {/* Background gradient accents */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        right: 0,
+        width: '50%',
+        height: '300px',
+        background: 'linear-gradient(135deg, rgba(0,88,190,0.04), transparent)',
+        pointerEvents: 'none',
+      }} />
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        width: '40%',
+        height: '300px',
+        background: 'linear-gradient(135deg, transparent, rgba(0,108,73,0.04))',
+        pointerEvents: 'none',
+      }} />
+
+      {/* Main Content */}
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '80px 24px 40px',
+        position: 'relative',
+        zIndex: 1,
+      }}>
+        {/* Logo Icon */}
+        <div style={{
+          width: '56px',
+          height: '56px',
+          borderRadius: 'var(--radius-xl)',
+          backgroundColor: 'var(--color-primary-600)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: '24px',
+          boxShadow: '0 8px 32px rgba(0, 88, 190, 0.2)',
+        }}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <path d="M12 3L1 9L5 11.18V17.18L12 21L19 17.18V11.18L21 10.09V17H23V9L12 3ZM18.82 9L12 12.72L5.18 9L12 5.28L18.82 9ZM17 15.99L12 18.72L7 15.99V12.27L12 15L17 12.27V15.99Z" fill="white"/>
+          </svg>
         </div>
 
-        <div className="mb-12 relative z-10">
-          <Logo className="h-10" />
-        </div>
-        
-        <div className="max-w-xl relative z-10">
-          <h1 className="text-5xl xl:text-6xl font-bold text-gray-900 dark:text-white leading-tight mb-8">
-            Access your <span className="gradient-text">learning world.</span>
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-lg mb-12 leading-relaxed">
-            Welcome back to the community. Continue your journey with thousands of experts and fellow students dedicated to academic excellence.
-          </p>
+        <h1 style={{
+          fontSize: '28px',
+          fontWeight: 700,
+          color: 'var(--color-on-surface)',
+          letterSpacing: '-0.02em',
+          marginBottom: '4px',
+        }}>
+          Dourous-Net
+        </h1>
 
-          <div className="grid grid-cols-2 gap-8">
-            <div className="glass-card p-6 border-blue-100/50 dark:border-blue-800/30">
-              <p className="text-3xl font-bold text-primary-600 mb-1">24/7</p>
-              <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Expert Support</p>
+        <p style={{
+          fontSize: '14px',
+          color: 'var(--color-outline)',
+          marginBottom: '40px',
+        }}>
+          Welcome back
+        </p>
+
+        {/* Login Card */}
+        <div className="card-static animate-scale-in" style={{
+          width: '100%',
+          maxWidth: '420px',
+          padding: '32px',
+        }}>
+          <form onSubmit={handleSubmit}>
+            {/* Email Field */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: 500,
+                color: 'var(--color-on-surface)',
+                marginBottom: '8px',
+              }}>
+                Email Address
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Mail
+                  size={18}
+                  style={{
+                    position: 'absolute',
+                    left: '14px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: 'var(--color-outline)',
+                  }}
+                />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="input-field input-field-icon"
+                  placeholder="name@example.com"
+                />
+              </div>
             </div>
-            <div className="glass-card p-6 border-success-100/50 dark:border-success-800/30">
-              <p className="text-3xl font-bold text-success-600 mb-1">50k+</p>
-              <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Active Learners</p>
+
+            {/* Password Field */}
+            <div style={{ marginBottom: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <label style={{
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  color: 'var(--color-on-surface)',
+                }}>
+                  Password
+                </label>
+                <button
+                  type="button"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    color: 'var(--color-primary-600)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Forgot?
+                </button>
+              </div>
+              <div style={{ position: 'relative' }}>
+                <Lock
+                  size={18}
+                  style={{
+                    position: 'absolute',
+                    left: '14px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: 'var(--color-outline)',
+                  }}
+                />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="input-field input-field-icon"
+                  placeholder="••••••••"
+                  style={{ paddingRight: '44px' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '14px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: 'var(--color-outline)',
+                    padding: '4px',
+                  }}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
+
+            {/* Login Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary"
+              style={{
+                width: '100%',
+                padding: '14px',
+                fontSize: '15px',
+                fontWeight: 600,
+                borderRadius: 'var(--radius-xl)',
+              }}
+            >
+              {loading ? <Loader2 size={20} style={{ animation: 'spin 0.8s linear infinite' }} /> : 'Login'}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px',
+            margin: '28px 0',
+          }}>
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--color-outline-variant)' }} />
+            <span className="label-caps" style={{ color: 'var(--color-outline)', fontSize: '11px' }}>
+              OR CONTINUE WITH
+            </span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--color-outline-variant)' }} />
+          </div>
+
+          {/* Social Login */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <button
+              type="button"
+              onClick={() => signInWithProvider('google')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                padding: '12px',
+                backgroundColor: 'var(--color-surface-container-lowest)',
+                border: '1px solid var(--color-outline-variant)',
+                borderRadius: 'var(--radius-xl)',
+                fontSize: '14px',
+                fontWeight: 500,
+                color: 'var(--color-on-surface)',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              <img src="https://www.svgrepo.com/show/475656/google-color.svg" style={{ width: '18px', height: '18px' }} alt="Google" />
+              Google
+            </button>
+            <button
+              type="button"
+              onClick={() => signInWithProvider('facebook')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                padding: '12px',
+                backgroundColor: 'var(--color-surface-container-lowest)',
+                border: '1px solid var(--color-outline-variant)',
+                borderRadius: 'var(--radius-xl)',
+                fontSize: '14px',
+                fontWeight: 500,
+                color: 'var(--color-on-surface)',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" style={{ width: '18px', height: '18px' }} alt="Facebook" />
+              Facebook
+            </button>
           </div>
         </div>
+
+        {/* Sign Up Link */}
+        <p style={{
+          marginTop: '24px',
+          fontSize: '14px',
+          color: 'var(--color-on-surface-variant)',
+        }}>
+          Don't have an account?{' '}
+          <Link to="/signup" style={{ color: 'var(--color-primary-600)', fontWeight: 600 }}>
+            Sign Up for free
+          </Link>
+        </p>
       </div>
 
-      {/* Right Side: Form Section */}
-      <div className="flex-1 flex flex-col justify-center items-center p-6 lg:p-12 xl:p-24 relative overflow-hidden">
-        <div className="w-full max-w-[480px] relative z-10">
-          <div className="lg:hidden mb-12 flex justify-center">
-            <Logo className="h-10" />
+      {/* Footer */}
+      <div style={{
+        borderTop: '1px solid var(--color-outline-variant)',
+        padding: '20px 0',
+      }}>
+        <div className="container-max" style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '16px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Logo />
+            <span style={{ fontSize: '12px', color: 'var(--color-outline)' }}>
+              © 2024 Dourous-Net. All rights reserved.
+            </span>
           </div>
-
-          <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-2xl shadow-blue-500/5 p-8 md:p-12 border border-gray-50 dark:border-gray-800">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Sign In</h2>
-              <Link to="/signup" className="text-sm font-bold text-primary-600 hover:underline">Sign Up</Link>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="input-field pl-12"
-                    placeholder="john@example.com"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between ml-1">
-                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Password</label>
-                  <button type="button" className="text-[10px] font-bold text-primary-600 hover:underline uppercase tracking-wider">Forgot Password?</button>
-                </div>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="input-field pl-12 pr-12"
-                    placeholder="••••••••"
-                  />
-                  <button 
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-                <p className="text-xs text-gray-500 font-medium">Remember me for 30 days</p>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full btn-primary py-4 group"
-              >
-                {loading ? <Loader2 className="animate-spin" size={20} /> : (
-                  <>
-                    <span>Sign In to Account</span>
-                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                  </>
-                )}
-              </button>
-            </form>
-
-            <div className="mt-10">
-              <div className="relative flex items-center justify-center mb-8">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-100 dark:border-gray-800"></div>
-                </div>
-                <span className="relative px-4 bg-white dark:bg-gray-900 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Or login with</span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <button 
-                  type="button"
-                  onClick={() => signInWithProvider('google')}
-                  className="btn-secondary py-3 text-xs flex items-center justify-center gap-2"
-                >
-                  <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-4 h-4" alt="Google" />
-                  Google
-                </button>
-                <button 
-                  type="button"
-                  onClick={() => signInWithProvider('apple')}
-                  className="btn-secondary py-3 text-xs flex items-center justify-center gap-2"
-                >
-                  <img src="https://www.svgrepo.com/show/303108/apple-black-logo.svg" className="w-4 h-4 dark:invert" alt="Apple" />
-                  Apple
-                </button>
-              </div>
-            </div>
+          <div style={{ display: 'flex', gap: '24px' }}>
+            {['Privacy Policy', 'Terms of Service', 'Contact Support'].map(link => (
+              <a key={link} href="#" style={{ fontSize: '12px', fontWeight: 500, color: 'var(--color-on-surface-variant)' }}>
+                {link}
+              </a>
+            ))}
           </div>
         </div>
       </div>

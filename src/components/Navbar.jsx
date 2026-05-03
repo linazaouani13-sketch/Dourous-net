@@ -1,31 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
 import Logo from './Logo';
-import { 
-  LogOut, Sun, Moon, Menu, X, 
-  LayoutDashboard, Users, CreditCard, Home as HomeIcon 
-} from 'lucide-react';
+import { LogOut, Menu, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Navbar = () => {
   const { user, signOut } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const isDashboard = location.pathname === '/dashboard';
+
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
@@ -40,89 +34,127 @@ const Navbar = () => {
     }
   };
 
+  if (isDashboard) return null;
+
   const navLinks = [
-    { name: 'Home', path: '/' },
+    { name: 'Courses', path: '/teachers' },
     { name: 'Teachers', path: '/teachers' },
-    { name: 'Dashboard', path: '/dashboard' },
     { name: 'Pricing', path: '/pricing' },
+    { name: 'About', path: '/#about' },
   ];
 
   return (
     <>
-      <nav className={`fixed w-full z-[100] transition-all duration-500 ${
-        isScrolled 
-          ? 'bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl py-4 shadow-sm border-b border-gray-100/50 dark:border-white/5' 
-          : 'bg-transparent py-8'
-      }`}>
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-          <div className="flex justify-between items-center">
-            
-            <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
-              <Logo className="h-9" />
+      <nav
+        className={`glass-nav ${isScrolled ? 'glass-nav--scrolled' : ''}`}
+        style={{
+          backgroundColor: isScrolled ? 'rgba(249, 249, 255, 0.92)' : 'rgba(249, 249, 255, 0.75)',
+        }}
+      >
+        <div className="container-max">
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            height: '64px',
+          }}>
+            <Link to="/" style={{ display: 'flex', alignItems: 'center' }}>
+              <Logo />
             </Link>
 
-            {/* Desktop Navigation */}
-            <div className={`hidden ${!isScrolled ? 'md:flex' : ''} items-center gap-8`}>
+            {/* Desktop Nav Links */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '32px',
+            }} className="hidden md:flex">
               {navLinks.map((link) => (
-                <Link 
+                <Link
                   key={link.name}
                   to={link.path}
-                  className={`text-sm font-medium transition-colors ${
-                    location.pathname === link.path 
-                      ? 'text-primary-600' 
-                      : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400'
-                  }`}
+                  style={{
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    color: location.pathname === link.path
+                      ? 'var(--color-primary-600)'
+                      : 'var(--color-on-surface-variant)',
+                    transition: 'color 0.2s',
+                  }}
+                  onMouseEnter={(e) => e.target.style.color = 'var(--color-primary-600)'}
+                  onMouseLeave={(e) => {
+                    if (location.pathname !== link.path) {
+                      e.target.style.color = 'var(--color-on-surface-variant)';
+                    }
+                  }}
                 >
                   {link.name}
                 </Link>
               ))}
             </div>
 
-            <div className="flex items-center gap-4">
-              <button
-                onClick={toggleTheme}
-                className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              >
-                {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-              </button>
-
+            {/* Right Side Actions */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               {user ? (
-                <div className="hidden md:flex items-center gap-4">
-                  <Link 
-                    to="/profile"
-                    className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                <div className="hidden md:flex" style={{ alignItems: 'center', gap: '12px' }}>
+                  <Link
+                    to="/dashboard"
+                    className="btn-primary"
+                    style={{ padding: '10px 24px', fontSize: '13px' }}
                   >
-                    <div className="w-8 h-8 rounded-full bg-white dark:bg-gray-800 overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 flex items-center justify-center">
-                      <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.nom || 'User'}&backgroundColor=f1f5f9&textColor=64748b`} alt="Profile" className="w-full h-full object-cover" />
-                    </div>
+                    Dashboard
                   </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="p-2 rounded-full text-gray-500 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 transition-colors"
+                  <Link
+                    to="/profile"
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: 'var(--radius-full)',
+                      overflow: 'hidden',
+                      border: '2px solid var(--color-outline-variant)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: 'var(--color-primary-50)',
+                      color: 'var(--color-primary-600)',
+                      fontWeight: 700,
+                      fontSize: '14px',
+                    }}
                   >
-                    <LogOut size={20} />
-                  </button>
+                    {user.email?.[0]?.toUpperCase() || 'U'}
+                  </Link>
                 </div>
               ) : (
-                <div className="hidden md:flex items-center gap-3">
-                  <Link 
-                    to="/login" 
-                    className="hidden sm:block text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary-600 transition-colors"
+                <div className="hidden md:flex" style={{ alignItems: 'center', gap: '12px' }}>
+                  <Link
+                    to="/login"
+                    style={{
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      color: 'var(--color-on-surface-variant)',
+                      transition: 'color 0.2s',
+                    }}
+                    onMouseEnter={(e) => e.target.style.color = 'var(--color-primary-600)'}
+                    onMouseLeave={(e) => e.target.style.color = 'var(--color-on-surface-variant)'}
                   >
-                    Sign In
+                    Log In
                   </Link>
-                  <Link 
-                    to="/signup" 
-                    className="btn-primary py-2 px-5 text-sm"
-                  >
-                    Get Started
+                  <Link to="/signup" className="btn-primary" style={{ padding: '10px 24px', fontSize: '13px' }}>
+                    Sign Up
                   </Link>
                 </div>
               )}
-              
-              <button 
+
+              {/* Mobile Menu Toggle */}
+              <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="md:hidden"
+                style={{
+                  padding: '8px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: 'var(--color-on-surface)',
+                }}
               >
                 <Menu size={24} />
               </button>
@@ -131,50 +163,99 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Mobile Menu Overlay */}
-      <div className={`fixed inset-0 z-[150] md:hidden transition-all duration-300 ${mobileMenuOpen ? 'visible' : 'invisible'}`}>
-        <div 
-          className={`absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity duration-300 ${mobileMenuOpen ? 'opacity-100' : 'opacity-0'}`}
-          onClick={() => setMobileMenuOpen(false)}
-        />
-        <div className={`absolute right-0 top-0 h-full w-64 bg-white dark:bg-gray-900 shadow-2xl transition-transform duration-300 ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-          <div className="p-6">
-            <div className="flex justify-between items-center mb-10">
-              <Logo className="h-6" />
-              <button onClick={() => setMobileMenuOpen(false)} className="text-gray-400 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 150,
+        }}>
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundColor: 'rgba(25, 27, 35, 0.4)',
+              backdropFilter: 'blur(8px)',
+            }}
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <div style={{
+            position: 'absolute',
+            right: 0,
+            top: 0,
+            height: '100%',
+            width: '280px',
+            backgroundColor: 'var(--color-surface-container-lowest)',
+            boxShadow: 'var(--shadow-xl)',
+            padding: '24px',
+            display: 'flex',
+            flexDirection: 'column',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+              <Logo />
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-outline)', padding: '8px' }}
+              >
                 <X size={24} />
               </button>
             </div>
-            <nav className="space-y-4">
+            <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {navLinks.map((link) => (
-                <Link 
+                <Link
                   key={link.name}
                   to={link.path}
-                  className={`block text-lg font-bold ${
-                    location.pathname === link.path ? 'text-primary-600' : 'text-gray-600 dark:text-gray-300'
-                  }`}
+                  style={{
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    color: location.pathname === link.path ? 'var(--color-primary-600)' : 'var(--color-on-surface)',
+                    padding: '12px 16px',
+                    borderRadius: 'var(--radius-lg)',
+                    transition: 'background 0.2s',
+                  }}
                 >
                   {link.name}
                 </Link>
               ))}
-              <div className="pt-8 border-t border-gray-100 dark:border-gray-800 space-y-4">
-                {!user ? (
-                  <>
-                    <Link to="/login" className="block text-lg font-bold text-gray-600 dark:text-gray-300">Sign In</Link>
-                    <Link to="/signup" className="block btn-primary w-full py-3">Get Started</Link>
-                  </>
-                ) : (
-                  <>
-                    <Link to="/dashboard" className="block text-lg font-bold text-primary-600">Dashboard</Link>
-                    <Link to="/profile" className="block text-lg font-bold text-gray-600 dark:text-gray-300">Profile</Link>
-                    <button onClick={handleLogout} className="block text-lg font-bold text-red-600">Sign Out</button>
-                  </>
-                )}
-              </div>
             </nav>
+            <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {!user ? (
+                <>
+                  <Link to="/login" style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-on-surface-variant)', padding: '12px 16px' }}>
+                    Log In
+                  </Link>
+                  <Link to="/signup" className="btn-primary" style={{ width: '100%', padding: '14px', justifyContent: 'center' }}>
+                    Sign Up
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link to="/dashboard" className="btn-primary" style={{ width: '100%', padding: '14px', justifyContent: 'center' }}>
+                    Dashboard
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '12px 16px',
+                      fontSize: '16px',
+                      fontWeight: 600,
+                      color: 'var(--color-error-500)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <LogOut size={18} /> Sign Out
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </>
   );
 };

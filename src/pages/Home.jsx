@@ -1,11 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  ArrowRight, CheckCircle2, Calendar, FileText, 
-  Users, Globe, Star, ShieldCheck, Zap
-} from 'lucide-react';
+import { ShieldCheck, Calendar, FileText, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import Logo from '../components/Logo';
 import Footer from '../components/Footer';
 
 const Home = () => {
@@ -14,113 +10,219 @@ const Home = () => {
   const features = [
     {
       title: "Verified Teachers",
-      desc: "Every educator goes through a rigorous vetting process. We verify academic credentials and teaching experience so you don't have to.",
-      icon: <ShieldCheck className="text-primary-600" />,
-      bg: "bg-blue-50"
+      desc: "Every educator on our platform undergoes a rigorous multi-step background and certification check to ensure top-quality instruction.",
+      icon: <ShieldCheck size={22} />,
+      colorClass: 'icon-circle-blue',
     },
     {
       title: "Flexible Booking",
-      desc: "Schedule lessons that fit your life. Whether it's a one-time intensive session or weekly support, we adapt to your calendar.",
-      icon: <Calendar className="text-primary-600" />,
-      bg: "bg-blue-50"
+      desc: "Schedule sessions that fit your lifestyle. Our intelligent calendar syncs across timezones for hassle-free learning on your own terms.",
+      icon: <Calendar size={22} />,
+      colorClass: 'icon-circle-blue',
     },
     {
       title: "PDF Homework Support",
-      desc: "Upload your assignments directly. Our teachers can review your work, provide annotations, and guide you through complex problems.",
-      icon: <FileText className="text-primary-600" />,
-      bg: "bg-blue-50"
-    }
+      desc: "Upload assignments directly in PDF format. Teachers can annotate and provide real-time feedback on your specific schoolwork.",
+      icon: <FileText size={22} />,
+      colorClass: 'icon-circle-orange',
+    },
+  ];
+
+  const stats = [
+    { value: "50k+", label: "ACTIVE STUDENTS" },
+    { value: "1,200+", label: "EXPERT TEACHERS" },
+    { value: "98%", label: "SUCCESS RATE" },
+    { value: "24/7", label: "STUDENT SUPPORT" },
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900 overflow-x-hidden">
-      
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 px-4">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-8 animate-in fade-in slide-in-from-left duration-1000">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-xs font-bold uppercase tracking-wider">
-              <Zap size={14} fill="currentColor" />
-              LIGHTNING REVOLUTION
-            </div>
-            
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-gray-900 dark:text-white leading-[1.1]">
-              Master Any Subject with <br />
-              <span className="text-primary-600">Expert Teachers</span>
-            </h1>
-            
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-xl leading-relaxed">
-              Unlock your potential with personalized 1-on-1 sessions. Book instantly, upload your homework for feedback, and excel in your academic journey with our global network of verified educators.
-            </p>
-            
-            <div className="flex flex-wrap gap-4">
-              {!user && (
-                <Link to="/signup" className="btn-primary text-lg px-8 py-4">
-                  Get Started
-                </Link>
-              )}
-              <Link to="/teachers" className="btn-secondary text-lg px-8 py-4">
-                Browse Teachers
-              </Link>
-            </div>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--color-surface)' }}>
 
-            <div className="flex items-center gap-4 pt-4">
-              <div className="flex -space-x-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="w-10 h-10 rounded-full border-2 border-white dark:border-gray-900 bg-gray-200 overflow-hidden">
-                    <img src={`https://api.dicebear.com/7.x/initials/svg?seed=Tutor+${i}&backgroundColor=f1f5f9&textColor=64748b`} alt="Tutor" className="bg-white object-cover" />
-                  </div>
-                ))}
+      {/* ═══ HERO SECTION ═══ */}
+      <section style={{ paddingTop: '120px', paddingBottom: '80px' }}>
+        <div className="container-max">
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '64px',
+            alignItems: 'center',
+          }}>
+            {/* Left: Text Content */}
+            <div className="animate-fade-in-up" style={{ maxWidth: '560px' }}>
+              {/* Badge */}
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                backgroundColor: 'var(--color-secondary-50)',
+                color: 'var(--color-secondary-600)',
+                fontSize: '11px',
+                fontWeight: 700,
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase',
+                borderRadius: 'var(--radius-full)',
+                marginBottom: '24px',
+              }}>
+                <Sparkles size={14} />
+                SMARTER LEARNING EXPERIENCE
               </div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                <span className="text-gray-900 dark:text-white font-bold">3,000+</span> Expert Tutors Online
+
+              <h1 style={{
+                fontSize: '48px',
+                fontWeight: 700,
+                lineHeight: 1.15,
+                letterSpacing: '-0.02em',
+                color: 'var(--color-on-surface)',
+                marginBottom: '24px',
+              }}>
+                Book expert teachers &<br />
+                <span style={{ color: 'var(--color-primary-600)' }}>upload your homework</span>
+              </h1>
+
+              <p style={{
+                fontSize: '16px',
+                lineHeight: 1.7,
+                color: 'var(--color-on-surface-variant)',
+                marginBottom: '32px',
+                maxWidth: '480px',
+              }}>
+                Connect with top-tier educators worldwide. Personalize your learning path with direct feedback and seamless homework submissions in one platform.
               </p>
-            </div>
-          </div>
 
-          <div className="relative animate-in fade-in slide-in-from-right duration-1000">
-            <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl border-8 border-white dark:border-gray-800">
-              <img 
-                src="/assets/hero.png" 
-                className="w-full h-auto object-cover aspect-[4/3]" 
-                alt="Education Team"
-              />
-            </div>
-            
-            {/* Floating Card */}
-            <div className="absolute -bottom-6 -left-6 md:-left-12 glass-card p-4 md:p-6 flex items-center gap-4 animate-float max-w-[280px]">
-              <div className="w-12 h-12 rounded-xl bg-success-500 flex items-center justify-center text-white">
-                <Calendar size={24} />
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                {!user ? (
+                  <Link to="/signup" className="btn-dark" style={{ padding: '14px 32px' }}>
+                    Get Started
+                  </Link>
+                ) : (
+                  <Link to="/dashboard" className="btn-dark" style={{ padding: '14px 32px' }}>
+                    Go to Dashboard
+                  </Link>
+                )}
+                <Link to="/teachers" className="btn-secondary" style={{ padding: '14px 32px' }}>
+                  Browse Teachers
+                </Link>
               </div>
-              <div>
-                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Next Session</p>
-                <p className="text-sm font-bold text-gray-900 dark:text-white">Mathematics @ 11:00 AM</p>
+            </div>
+
+            {/* Right: Hero Image + Floating Card */}
+            <div className="animate-fade-in-up delay-200" style={{ position: 'relative' }}>
+              <div style={{
+                borderRadius: 'var(--radius-xl)',
+                overflow: 'hidden',
+                boxShadow: 'var(--shadow-xl)',
+                border: '1px solid var(--color-outline-variant)',
+              }}>
+                <img
+                  src="/assets/hero.png"
+                  alt="Students collaborating in a modern classroom"
+                  style={{ width: '100%', height: 'auto', display: 'block', aspectRatio: '4/3', objectFit: 'cover' }}
+                />
+              </div>
+
+              {/* Floating PDF Card */}
+              <div className="animate-float" style={{
+                position: 'absolute',
+                bottom: '-20px',
+                right: '-16px',
+                backgroundColor: 'var(--color-surface-container-lowest)',
+                border: '1px solid var(--color-outline-variant)',
+                borderRadius: 'var(--radius-xl)',
+                padding: '12px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                boxShadow: 'var(--shadow-lg)',
+              }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--color-primary-50)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'var(--color-primary-600)',
+                }}>
+                  <FileText size={18} />
+                </div>
+                <div>
+                  <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-on-surface)' }}>Physics_HW_01.pdf</p>
+                  <p style={{ fontSize: '11px', color: 'var(--color-outline)' }}>Uploaded 2m ago</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 lg:py-32 bg-gray-50 dark:bg-gray-900/50">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-5xl font-bold mb-4">Everything You Need to Succeed</h2>
-          <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-16">
-            We've built the most comprehensive platform for modern education, combining human expertise with powerful digital tools.
+      {/* ═══ FEATURES SECTION ═══ */}
+      <section id="about" style={{
+        paddingTop: '80px',
+        paddingBottom: '80px',
+        backgroundColor: 'var(--color-surface-container-low)',
+      }}>
+        <div className="container-max" style={{ textAlign: 'center' }}>
+          <h2 style={{
+            fontSize: '36px',
+            fontWeight: 700,
+            letterSpacing: '-0.02em',
+            color: 'var(--color-on-surface)',
+            marginBottom: '12px',
+          }}>
+            Why Choose Dourous-Net?
+          </h2>
+          <p style={{
+            fontSize: '16px',
+            color: 'var(--color-on-surface-variant)',
+            maxWidth: '520px',
+            margin: '0 auto 56px',
+            lineHeight: 1.6,
+          }}>
+            Everything you need for academic success, combined into a seamless digital classroom experience.
           </p>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '24px',
+          }}>
             {features.map((feature, i) => (
-              <div 
-                key={i} 
-                className="card-premium p-8 text-left group animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both"
-                style={{ animationDelay: `${i * 150}ms` }}
+              <div
+                key={i}
+                className="card-static animate-fade-in-up"
+                style={{
+                  padding: '32px 24px',
+                  textAlign: 'left',
+                  animationDelay: `${i * 150}ms`,
+                  animationFillMode: 'both',
+                }}
               >
-                <div className={`w-12 h-12 rounded-xl ${feature.bg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+                <div className={feature.colorClass} style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: 'var(--radius-lg)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '20px',
+                }}>
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-bold mb-4">{feature.title}</h3>
-                <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">
+                <h3 style={{
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  color: 'var(--color-on-surface)',
+                  marginBottom: '12px',
+                }}>
+                  {feature.title}
+                </h3>
+                <p style={{
+                  fontSize: '14px',
+                  lineHeight: 1.6,
+                  color: 'var(--color-on-surface-variant)',
+                }}>
                   {feature.desc}
                 </p>
               </div>
@@ -129,49 +231,38 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Stats/Image Section */}
-      <section className="py-20 lg:py-32 px-4">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-8 items-stretch">
-          <div className="relative rounded-3xl overflow-hidden min-h-[400px]">
-            <img 
-              src="/assets/stats.png" 
-              className="absolute inset-0 w-full h-full object-cover" 
-              alt="Empowering Students"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-10">
-              <h3 className="text-3xl font-bold text-white mb-2">Empowering Students Worldwide</h3>
-              <p className="text-white/80">Join over 50,000 learners achieving their dreams.</p>
-            </div>
-          </div>
-
-          <div className="grid gap-8">
-            <div className="bg-primary-600 rounded-3xl p-8 text-white flex flex-col justify-between">
-              <Star className="text-white/50 mb-8" size={32} />
-              <div>
-                <p className="text-4xl font-bold mb-1">4.9/5</p>
-                <p className="text-white/70 text-sm">Average Tutor Rating</p>
+      {/* ═══ STATS SECTION ═══ */}
+      <section style={{ paddingTop: '64px', paddingBottom: '64px' }}>
+        <div className="container-max">
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: '32px',
+            textAlign: 'center',
+          }}>
+            {stats.map((stat, i) => (
+              <div key={i} className="animate-fade-in-up" style={{ animationDelay: `${i * 100}ms`, animationFillMode: 'both' }}>
+                <p style={{
+                  fontSize: '40px',
+                  fontWeight: 700,
+                  color: 'var(--color-primary-600)',
+                  letterSpacing: '-0.02em',
+                  marginBottom: '8px',
+                }}>
+                  {stat.value}
+                </p>
+                <p className="label-caps" style={{ color: 'var(--color-outline)' }}>
+                  {stat.label}
+                </p>
               </div>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-8">
-               <div className="bg-gray-100 dark:bg-gray-800 rounded-3xl p-8 flex flex-col justify-between">
-                  <Globe className="text-gray-400 mb-8" size={32} />
-                  <div>
-                    <p className="text-4xl font-bold mb-1">15+</p>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm">Countries Represented</p>
-                  </div>
-               </div>
-               <div className="bg-success-700 rounded-3xl p-8 text-white flex flex-col justify-between">
-                  <Zap className="text-white/50 mb-8" size={32} />
-                  <div>
-                    <p className="text-lg font-bold mb-2">Instant Connection</p>
-                    <p className="text-white/70 text-sm leading-tight">Get matched with a teacher in under 5 minutes for urgent tasks.</p>
-                  </div>
-               </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
-      <Footer />
+
+      <div style={{ marginTop: 'auto' }}>
+        <Footer />
+      </div>
     </div>
   );
 };

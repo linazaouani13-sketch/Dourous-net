@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, Loader2, Eye, EyeOff, User, GraduationCap, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Loader2, Eye, EyeOff, User, GraduationCap } from 'lucide-react';
 import Logo from '../components/Logo';
 import { supabase } from '../lib/supabaseClient';
 import toast from 'react-hot-toast';
@@ -19,10 +19,10 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
-      const { data: authData, error: authError } = await signUp({ 
-        email, 
+      const { data: authData, error: authError } = await signUp({
+        email,
         password,
         options: {
           data: {
@@ -34,7 +34,6 @@ const Signup = () => {
       if (authError) throw authError;
 
       if (authData?.user) {
-        // Create profile based on role
         const table = role === 'teacher' ? 'professeurs' : 'eleves';
         const { error: profileError } = await supabase
           .from(table)
@@ -47,7 +46,7 @@ const Signup = () => {
         if (profileError) {
           console.error('Profile creation warning:', profileError.message);
         }
-        
+
         toast.success('Account created successfully!');
         navigate('/login');
       }
@@ -59,182 +58,189 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-[#fcfcfd] dark:bg-gray-950">
-      
-      {/* Left Side: Hero Section */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-center px-12 xl:px-24 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800">
-        <div className="mb-12">
-          <Logo className="h-10" />
-        </div>
-        
-        <div className="max-w-xl">
-          <h1 className="text-5xl xl:text-6xl font-bold text-gray-900 dark:text-white leading-tight mb-8">
-            Master new skills with <span className="gradient-text">expert guidance.</span>
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-lg mb-12 leading-relaxed">
-            Join over 50,000 students and teachers in a modern ecosystem designed for high-impact educational growth and collaborative learning.
-          </p>
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      backgroundColor: 'var(--color-surface)',
+    }}>
+      {/* Background accents */}
+      <div style={{
+        position: 'fixed', top: 0, right: 0, width: '50%', height: '300px',
+        background: 'linear-gradient(135deg, rgba(0,88,190,0.04), transparent)',
+        pointerEvents: 'none',
+      }} />
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, width: '40%', height: '300px',
+        background: 'linear-gradient(135deg, transparent, rgba(0,108,73,0.04))',
+        pointerEvents: 'none',
+      }} />
 
-          <div className="relative mb-12 group">
-            <div className="absolute -inset-4 bg-primary-500/5 rounded-3xl blur-2xl group-hover:bg-primary-500/10 transition-all" />
-            <img 
-              src="/signup_hero_image_1777483607765.png" 
-              alt="Students learning" 
-              className="relative w-full rounded-2xl shadow-2xl"
-            />
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '80px 24px 40px',
+        position: 'relative',
+        zIndex: 1,
+      }}>
+        {/* Logo Icon */}
+        <div style={{
+          width: '56px', height: '56px', borderRadius: 'var(--radius-xl)',
+          backgroundColor: 'var(--color-primary-600)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          marginBottom: '24px',
+          boxShadow: '0 8px 32px rgba(0, 88, 190, 0.2)',
+        }}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <path d="M12 3L1 9L5 11.18V17.18L12 21L19 17.18V11.18L21 10.09V17H23V9L12 3ZM18.82 9L12 12.72L5.18 9L12 5.28L18.82 9ZM17 15.99L12 18.72L7 15.99V12.27L12 15L17 12.27V15.99Z" fill="white"/>
+          </svg>
+        </div>
+
+        <h1 style={{
+          fontSize: '28px', fontWeight: 700, color: 'var(--color-on-surface)',
+          letterSpacing: '-0.02em', marginBottom: '4px',
+        }}>
+          Join Dourous-Net
+        </h1>
+        <p style={{ fontSize: '14px', color: 'var(--color-outline)', marginBottom: '40px' }}>
+          Create your free account
+        </p>
+
+        {/* Signup Card */}
+        <div className="card-static animate-scale-in" style={{ width: '100%', maxWidth: '440px', padding: '32px' }}>
+          <form onSubmit={handleSubmit}>
+            {/* Full Name */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: 'var(--color-on-surface)', marginBottom: '8px' }}>
+                Full Name
+              </label>
+              <div style={{ position: 'relative' }}>
+                <User size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-outline)' }} />
+                <input type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)}
+                  className="input-field input-field-icon" placeholder="John Doe" />
+              </div>
+            </div>
+
+            {/* Email */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: 'var(--color-on-surface)', marginBottom: '8px' }}>
+                Email Address
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Mail size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-outline)' }} />
+                <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+                  className="input-field input-field-icon" placeholder="name@example.com" />
+              </div>
+            </div>
+
+            {/* Role */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: 'var(--color-on-surface)', marginBottom: '8px' }}>
+                I am a...
+              </label>
+              <div style={{ position: 'relative' }}>
+                <GraduationCap size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-outline)' }} />
+                <select value={role} onChange={(e) => setRole(e.target.value)}
+                  className="input-field input-field-icon"
+                  style={{ appearance: 'none', cursor: 'pointer' }}>
+                  <option value="student">Student</option>
+                  <option value="teacher">Teacher</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Password */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: 'var(--color-on-surface)', marginBottom: '8px' }}>
+                Password
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Lock size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-outline)' }} />
+                <input type={showPassword ? "text" : "password"} required value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="input-field input-field-icon" placeholder="••••••••"
+                  style={{ paddingRight: '44px' }} />
+                <button type="button" onClick={() => setShowPassword(!showPassword)}
+                  style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-outline)', padding: '4px' }}>
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              <p style={{ fontSize: '12px', color: 'var(--color-outline)', marginTop: '6px' }}>
+                Must be at least 8 characters.
+              </p>
+            </div>
+
+            {/* Terms */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '24px' }}>
+              <input type="checkbox" required style={{ marginTop: '3px', accentColor: 'var(--color-primary-600)' }} />
+              <p style={{ fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
+                I agree to the{' '}
+                <a href="#" style={{ color: 'var(--color-primary-600)', fontWeight: 600 }}>Terms of Service</a> and{' '}
+                <a href="#" style={{ color: 'var(--color-primary-600)', fontWeight: 600 }}>Privacy Policy</a>.
+              </p>
+            </div>
+
+            <button type="submit" disabled={loading} className="btn-primary"
+              style={{ width: '100%', padding: '14px', fontSize: '15px', borderRadius: 'var(--radius-xl)' }}>
+              {loading ? <Loader2 size={20} style={{ animation: 'spin 0.8s linear infinite' }} /> : 'Create Account'}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', margin: '24px 0' }}>
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--color-outline-variant)' }} />
+            <span className="label-caps" style={{ color: 'var(--color-outline)', fontSize: '11px' }}>OR SIGN UP WITH</span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--color-outline-variant)' }} />
           </div>
 
-          <div className="grid grid-cols-3 gap-8">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">1.2k+</p>
-              <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Verified Teachers</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">450+</p>
-              <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Daily Sessions</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">98%</p>
-              <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Satisfaction</p>
-            </div>
+          {/* Social */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <button type="button" onClick={() => signInWithProvider('google')}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                padding: '12px', backgroundColor: 'var(--color-surface-container-lowest)',
+                border: '1px solid var(--color-outline-variant)', borderRadius: 'var(--radius-xl)',
+                fontSize: '14px', fontWeight: 500, color: 'var(--color-on-surface)', cursor: 'pointer',
+              }}>
+              <img src="https://www.svgrepo.com/show/475656/google-color.svg" style={{ width: '18px', height: '18px' }} alt="Google" />
+              Google
+            </button>
+            <button type="button" onClick={() => signInWithProvider('facebook')}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                padding: '12px', backgroundColor: 'var(--color-surface-container-lowest)',
+                border: '1px solid var(--color-outline-variant)', borderRadius: 'var(--radius-xl)',
+                fontSize: '14px', fontWeight: 500, color: 'var(--color-on-surface)', cursor: 'pointer',
+              }}>
+              <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" style={{ width: '18px', height: '18px' }} alt="Facebook" />
+              Facebook
+            </button>
           </div>
         </div>
+
+        <p style={{ marginTop: '24px', fontSize: '14px', color: 'var(--color-on-surface-variant)' }}>
+          Already have an account?{' '}
+          <Link to="/login" style={{ color: 'var(--color-primary-600)', fontWeight: 600 }}>Log In</Link>
+        </p>
       </div>
 
-      {/* Right Side: Form Section */}
-      <div className="flex-1 flex flex-col justify-center items-center p-6 lg:p-12 xl:p-24 relative overflow-hidden">
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50/50 dark:bg-blue-900/10 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-50/50 dark:bg-purple-900/10 blur-3xl rounded-full -translate-x-1/2 translate-y-1/2" />
-
-        <div className="w-full max-w-[480px] relative z-10">
-          <div className="lg:hidden mb-12 flex justify-center">
-            <Logo className="h-10" />
+      {/* Footer */}
+      <div style={{ borderTop: '1px solid var(--color-outline-variant)', padding: '20px 0' }}>
+        <div className="container-max" style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Logo />
+            <span style={{ fontSize: '12px', color: 'var(--color-outline)' }}>© 2024 Dourous-Net. All rights reserved.</span>
           </div>
-
-          <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-2xl shadow-blue-500/5 p-8 md:p-12 border border-gray-50 dark:border-gray-800">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Create Account</h2>
-              <Link to="/login" className="text-sm font-bold text-primary-600 hover:underline">Log In</Link>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
-                <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                  <input
-                    type="text"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="input-field pl-12"
-                    placeholder="John Doe"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="input-field pl-12"
-                    placeholder="john@example.com"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">I am a...</label>
-                <div className="relative">
-                  <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                  <select
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    className="input-field pl-12 appearance-none bg-no-repeat bg-[right_1rem_center]"
-                  >
-                    <option value="student">Student</option>
-                    <option value="teacher">Teacher</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Password</label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="input-field pl-12 pr-12"
-                    placeholder="••••••••"
-                  />
-                  <button 
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-                <p className="text-[10px] text-gray-400 font-medium ml-1">Must be at least 8 characters with a number and symbol.</p>
-              </div>
-
-              <div className="flex items-center gap-3 pt-2">
-                <input type="checkbox" required className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-                <p className="text-xs text-gray-500">
-                  I agree to the <a href="#" className="text-primary-600 font-bold hover:underline">Terms of Service</a> and <a href="#" className="text-primary-600 font-bold hover:underline">Privacy Policy</a>.
-                </p>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full btn-primary py-4 group"
-              >
-                {loading ? <Loader2 className="animate-spin" size={20} /> : (
-                  <>
-                    <span>Create My Account</span>
-                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                  </>
-                )}
-              </button>
-            </form>
-
-            <div className="mt-10">
-              <div className="relative flex items-center justify-center mb-8">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-100 dark:border-gray-800"></div>
-                </div>
-                <span className="relative px-4 bg-white dark:bg-gray-900 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Or sign up with</span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <button 
-                  type="button"
-                  onClick={() => signInWithProvider('google')}
-                  className="btn-secondary py-3 text-xs flex items-center justify-center gap-2"
-                >
-                  <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-4 h-4" alt="Google" />
-                  Google
-                </button>
-                <button 
-                  type="button"
-                  onClick={() => signInWithProvider('apple')}
-                  className="btn-secondary py-3 text-xs flex items-center justify-center gap-2"
-                >
-                  <img src="https://www.svgrepo.com/show/303108/apple-black-logo.svg" className="w-4 h-4 dark:invert" alt="Apple" />
-                  Apple
-                </button>
-              </div>
-            </div>
+          <div style={{ display: 'flex', gap: '24px' }}>
+            {['Privacy Policy', 'Terms of Service', 'Contact Support'].map(link => (
+              <a key={link} href="#" style={{ fontSize: '12px', fontWeight: 500, color: 'var(--color-on-surface-variant)' }}>{link}</a>
+            ))}
           </div>
         </div>
       </div>
