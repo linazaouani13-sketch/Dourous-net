@@ -877,7 +877,8 @@ const Dashboard = () => {
                  <p>Interactive Calendar View Coming Soon!</p>
                </div>
             </div>
-          </div>
+        )}
+
         {/* ═══ FAVORITES TAB ═══ */}
         {activeTab === 'Favorites' && (
           <div className="animate-fade-in">
