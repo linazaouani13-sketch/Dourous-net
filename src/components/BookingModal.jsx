@@ -8,7 +8,7 @@ const BookingModal = ({ teacher, onClose, onSuccess }) => {
   const { user } = useAuth();
   const [selectedSlotIndex, setSelectedSlotIndex] = useState(0);
   const [file, setFile] = useState(null);
-  const [commentaire, setCommentaire] = useState('');
+
   const [loading, setLoading] = useState(false);
 
   const today = new Date();
@@ -43,7 +43,6 @@ const BookingModal = ({ teacher, onClose, onSuccess }) => {
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage.from('devoirs').getPublicUrl(filePath);
-
       const slot = dateSlots[selectedSlotIndex];
       const timePart = slot.time.split(' ')[0];
       const isPM = slot.time.includes('PM');
@@ -65,10 +64,10 @@ const BookingModal = ({ teacher, onClose, onSuccess }) => {
       const { error: insertError } = await supabase.from('seances').insert({
         eleve_id: user.id,
         professeur_id: teacher.id,
-        date_heure: dateTimeStr,
+        date_seance: dateTimeStr,
+        duree_minutes: 60,
         devoir_url: publicUrl,
-        commentaire: commentaire,
-        statut: 'reservee',
+        statut: 'en_attente',
       });
       if (insertError) throw insertError;
 
@@ -228,6 +227,8 @@ const BookingModal = ({ teacher, onClose, onSuccess }) => {
               </div>
             </div>
 
+
+
             {/* PDF Upload */}
             <div style={{ marginBottom: '24px' }}>
               <label className="label-caps" style={{ display: 'block', marginBottom: '12px' }}>
@@ -308,27 +309,6 @@ const BookingModal = ({ teacher, onClose, onSuccess }) => {
                 </div>
               </div>
             </div>
-
-            {/* Comment / Note */}
-            <div style={{ marginBottom: '24px' }}>
-              <label className="label-caps" style={{ display: 'block', marginBottom: '12px' }}>
-                ADD A NOTE FOR THE TEACHER
-              </label>
-              <textarea
-                value={commentaire}
-                onChange={(e) => setCommentaire(e.target.value)}
-                placeholder={`Tell ${teacher.nom} what topics you'd like to focus on today...`}
-                rows="3"
-                className="input-field"
-                style={{
-                  resize: 'none',
-                  fontFamily: 'var(--font-body)',
-                  lineHeight: 1.5,
-                }}
-              />
-            </div>
-
-            {/* Footer: Price + Actions */}
             <div style={{
               paddingTop: '20px',
               borderTop: '1px solid var(--color-outline-variant)',

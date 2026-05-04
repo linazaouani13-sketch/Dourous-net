@@ -23,6 +23,9 @@ const Dashboard = () => {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTeacher, setSelectedTeacher] = useState(null);
+  const [settingsName, setSettingsName] = useState('');
+  const [settingsLanguage, setSettingsLanguage] = useState('en');
+  const [settingsLoading, setSettingsLoading] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -52,17 +55,25 @@ const Dashboard = () => {
       }
 
       setStudent(studentData);
+      if (studentData) {
+        setSettingsName(studentData.full_name || studentData.nom || user.user_metadata?.full_name || '');
+        setSettingsLanguage(user.user_metadata?.language || 'en');
+      }
 
       const { data: teacherData } = await supabase
         .from('professeurs')
         .select('*');
       setTeachers(teacherData || []);
 
-      const { data: sessionData } = await supabase
+      const { data: sessionData, error: sessionError } = await supabase
         .from('seances')
-        .select('*, professeurs(nom, specialite)')
+        .select('*, professeurs(*)')
         .eq('eleve_id', user.id)
-        .order('date_heure', { ascending: true });
+        .order('date_seance', { ascending: true });
+        
+      if (sessionError) {
+        console.error("Error fetching sessions:", sessionError);
+      }
       setSessions(sessionData || []);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -78,6 +89,33 @@ const Dashboard = () => {
   const handleBookingSuccess = () => {
     setSelectedTeacher(null);
     fetchData();
+  };
+
+  const handleSaveSettings = async (e) => {
+    e.preventDefault();
+    setSettingsLoading(true);
+    try {
+      // Update Auth user metadata
+      const { error: authError } = await supabase.auth.updateUser({
+        data: { full_name: settingsName, language: settingsLanguage }
+      });
+      if (authError) throw authError;
+
+      // Update eleves table
+      const { error: dbError } = await supabase
+        .from('eleves')
+        .update({ nom: settingsName })
+        .eq('id', user.id);
+      
+      if (dbError) throw dbError;
+
+      toast.success('Settings updated successfully!');
+      fetchData(); // Refresh to ensure everything is synced
+    } catch (error) {
+      toast.error(`Failed to update settings: ${error.message}`);
+    } finally {
+      setSettingsLoading(false);
+    }
   };
 
   const handleLogout = async () => {
@@ -281,7 +319,7 @@ const Dashboard = () => {
         </div>
 
         {/* ═══ OVERVIEW TAB ═══ */}
-        {(activeTab === 'Dashboard' || activeTab === 'My Sessions') && (
+        {activeTab === 'Dashboard' && (
           <div style={{
             display: 'grid',
             gridTemplateColumns: '1fr 340px',
@@ -441,6 +479,50 @@ const Dashboard = () => {
           </div>
         )}
 
+        {/* ═══ MY SESSIONS TAB ═══ */}
+        {activeTab === 'My Sessions' && (
+          <div className="animate-fade-in">
+            <div style={{ marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: '8px' }}>
+                My Sessions
+              </h2>
+              <p style={{ fontSize: '14px', color: 'var(--color-on-surface-variant)' }}>
+                View all your past and upcoming learning sessions.
+              </p>
+            </div>
+            
+            {sessions.length > 0 ? (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                gap: '16px',
+              }}>
+                {sessions.map(session => (
+                  <SessionCard key={session.id} session={session} />
+                ))}
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '60px 0', backgroundColor: 'var(--color-surface-container-low)', borderRadius: 'var(--radius-xl)' }}>
+                <Calendar size={48} style={{ color: 'var(--color-outline-variant)', marginBottom: '16px' }} />
+                <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--color-on-surface)', marginBottom: '8px' }}>
+                  No sessions yet
+                </h3>
+                <p style={{ fontSize: '14px', color: 'var(--color-outline)', marginBottom: '16px' }}>
+                  You don't have any booked sessions at the moment.
+                </p>
+                <button
+                  className="btn-primary"
+                  onClick={() => setActiveTab('Find Teachers')}
+                  style={{ padding: '10px 20px' }}
+                >
+                  Book Your First Session
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+
         {/* ═══ FIND TEACHERS TAB ═══ */}
         {activeTab === 'Find Teachers' && (
           <div className="animate-fade-in">
@@ -487,23 +569,75 @@ const Dashboard = () => {
             <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: '24px' }}>
               Account Settings
             </h2>
-            <div className="card-static" style={{ padding: '24px', maxWidth: '560px' }}>
+            <form onSubmit={handleSaveSettings} className="card-static" style={{ padding: '24px', maxWidth: '560px' }}>
               <div style={{ marginBottom: '20px' }}>
                 <label className="label-caps" style={{ display: 'block', marginBottom: '8px' }}>Full Name</label>
-                <input type="text" className="input-field" defaultValue={student?.full_name || student?.nom} disabled />
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  value={settingsName} 
+                  onChange={(e) => setSettingsName(e.target.value)} 
+                  required 
+                />
+              </div>
+              <div style={{ marginBottom: '20px' }}>
+                <label className="label-caps" style={{ display: 'block', marginBottom: '8px' }}>Email Address</label>
+                <input 
+                  type="email" 
+                  className="input-field" 
+                  defaultValue={user.email} 
+                  disabled 
+                  style={{ backgroundColor: 'var(--color-surface-container-highest)', opacity: 0.7 }}
+                />
+                <p style={{ fontSize: '12px', color: 'var(--color-outline)', marginTop: '4px' }}>Email cannot be changed.</p>
               </div>
               <div style={{ marginBottom: '24px' }}>
-                <label className="label-caps" style={{ display: 'block', marginBottom: '8px' }}>Email Address</label>
-                <input type="email" className="input-field" defaultValue={user.email} disabled />
+                <label className="label-caps" style={{ display: 'block', marginBottom: '12px' }}>Preferred Language</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                  {[
+                    { code: 'en', label: 'English', flag: '🇬🇧' },
+                    { code: 'fr', label: 'Français', flag: '🇫🇷' },
+                    { code: 'ar', label: 'العربية', flag: '🇸🇦' }
+                  ].map((lang) => (
+                    <button
+                      key={lang.code}
+                      type="button"
+                      onClick={() => setSettingsLanguage(lang.code)}
+                      style={{
+                        padding: '16px',
+                        borderRadius: 'var(--radius-lg)',
+                        border: settingsLanguage === lang.code ? '2px solid var(--color-primary-600)' : '1px solid var(--color-outline-variant)',
+                        backgroundColor: settingsLanguage === lang.code ? 'var(--color-primary-50)' : 'var(--color-surface-container-lowest)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        outline: 'none',
+                      }}
+                    >
+                      <span style={{ fontSize: '28px', lineHeight: 1 }}>{lang.flag}</span>
+                      <span style={{ 
+                        fontSize: '13px', 
+                        fontWeight: settingsLanguage === lang.code ? 700 : 500,
+                        color: settingsLanguage === lang.code ? 'var(--color-primary-700)' : 'var(--color-on-surface)'
+                      }}>
+                        {lang.label}
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
               <button
+                type="submit"
+                disabled={settingsLoading}
                 className="btn-primary"
-                style={{ width: '100%', padding: '14px' }}
-                onClick={() => toast.success('Settings updated!')}
+                style={{ width: '100%', padding: '14px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
               >
-                Save Changes
+                {settingsLoading ? <Loader2 size={20} className="animate-spin" /> : 'Save Changes'}
               </button>
-            </div>
+            </form>
           </div>
         )}
 

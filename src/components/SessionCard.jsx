@@ -3,7 +3,7 @@ import { FileText, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 
 const SessionCard = ({ session }) => {
-  const date = new Date(session.date_heure);
+  const date = new Date(session.date_seance);
   const month = format(date, 'MMM').toUpperCase();
   const day = format(date, 'dd');
   const time = format(date, 'hh:mm a');
