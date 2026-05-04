@@ -379,6 +379,17 @@ const Dashboard = () => {
               letterSpacing: '-0.02em',
             }}>
               {role === 'teacher' ? `Hello, Professor ${displayName}!` : `Welcome back, ${displayName}!`}
+              <span 
+                className={role === 'teacher' ? 'tag tag-primary' : 'tag tag-secondary'} 
+                style={{ 
+                  marginLeft: '12px', 
+                  verticalAlign: 'middle',
+                  fontSize: '11px',
+                  padding: '4px 10px'
+                }}
+              >
+                {role === 'teacher' ? 'PROFESSOR' : 'STUDENT'}
+              </span>
             </h1>
             <p style={{ fontSize: '14px', color: 'var(--color-on-surface-variant)', marginTop: '4px' }}>
               {role === 'teacher' 
