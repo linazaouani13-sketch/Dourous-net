@@ -23,58 +23,101 @@ const Dashboard = () => {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTeacher, setSelectedTeacher] = useState(null);
+  const [role, setRole] = useState(user.user_metadata?.role || 'student');
+  const [profile, setProfile] = useState(null);
   const [settingsName, setSettingsName] = useState('');
+  const [settingsPrenom, setSettingsPrenom] = useState('');
+  const [settingsNiveau, setSettingsNiveau] = useState('');
   const [settingsLanguage, setSettingsLanguage] = useState('en');
   const [settingsLoading, setSettingsLoading] = useState(false);
+  const [favorites, setFavorites] = useState([]);
 
   const fetchData = useCallback(async () => {
     try {
-      let { data: studentData, error: studentError } = await supabase
-        .from('eleves')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+      const userRole = user.user_metadata?.role || 'student';
+      setRole(userRole);
 
-      if (studentError && studentError.code === 'PGRST116') {
-        const { data: newStudent, error: insertError } = await supabase
-          .from('eleves')
-          .insert({
-            id: user.id,
-            nom: user.user_metadata?.full_name || user.email.split('@')[0],
-            email: user.email
-          })
-          .select()
+      if (userRole === 'teacher') {
+        // Fetch Professor Profile
+        const { data: profData, error: profError } = await supabase
+          .from('professeurs')
+          .select('*')
+          .eq('id', user.id)
           .single();
 
-        if (insertError) {
-          console.error("Failed to auto-create student profile:", insertError);
-          toast.error("Database Error: Could not create your student profile.");
+        if (profError && profError.code === 'PGRST116') {
+          // Auto-create if missing (though signup should handle it)
+          const { data: newProf } = await supabase
+            .from('professeurs')
+            .insert({
+              id: user.id,
+              nom: user.user_metadata?.nom || user.user_metadata?.full_name || user.email.split('@')[0],
+              email: user.email
+            })
+            .select()
+            .single();
+          setProfile(newProf);
         } else {
+          setProfile(profData);
+        }
+
+        // Fetch Professor's Sessions
+        const { data: sessionData } = await supabase
+          .from('seances')
+          .select('*, eleves(*)')
+          .eq('professeur_id', user.id)
+          .order('date_seance', { ascending: true });
+        setSessions(sessionData || []);
+
+      } else {
+        // Fetch Student Profile (Existing Logic)
+        let { data: studentData, error: studentError } = await supabase
+          .from('eleves')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (studentError && studentError.code === 'PGRST116') {
+          const { data: newStudent } = await supabase
+            .from('eleves')
+            .insert({
+              id: user.id,
+              nom: user.user_metadata?.nom || user.user_metadata?.full_name || user.email.split('@')[0],
+              prenom: user.user_metadata?.prenom || '',
+              email: user.email
+            })
+            .select()
+            .single();
           studentData = newStudent;
         }
+
+        setProfile(studentData);
+        setStudent(studentData); // Keep for compatibility if needed
+
+        // Fetch Student's Sessions
+        const { data: sessionData } = await supabase
+          .from('seances')
+          .select('*, professeurs(*)')
+          .eq('eleve_id', user.id)
+          .order('date_seance', { ascending: true });
+        setSessions(sessionData || []);
+
+        // Fetch Teachers for students
+        const { data: teacherData } = await supabase
+          .from('professeurs')
+          .select('*');
+        setTeachers(teacherData || []);
       }
 
-      setStudent(studentData);
-      if (studentData) {
-        setSettingsName(studentData.full_name || studentData.nom || user.user_metadata?.full_name || '');
-        setSettingsLanguage(user.user_metadata?.language || 'en');
+      // Sync settings form
+      if (profile) {
+        setSettingsName(profile.nom || '');
+        setSettingsPrenom(profile.prenom || '');
+        setSettingsNiveau(profile.niveau || '');
       }
+      setSettingsLanguage(user.user_metadata?.language || 'en');
+      setFavorites(user.user_metadata?.favorites || []);
 
-      const { data: teacherData } = await supabase
-        .from('professeurs')
-        .select('*');
-      setTeachers(teacherData || []);
-
-      const { data: sessionData, error: sessionError } = await supabase
-        .from('seances')
-        .select('*, professeurs(*)')
-        .eq('eleve_id', user.id)
-        .order('date_seance', { ascending: true });
-        
-      if (sessionError) {
-        console.error("Error fetching sessions:", sessionError);
-      }
-      setSessions(sessionData || []);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
@@ -91,6 +134,24 @@ const Dashboard = () => {
     fetchData();
   };
 
+  const toggleFavorite = async (teacherId) => {
+    const newFavorites = favorites.includes(teacherId)
+      ? favorites.filter(id => id !== teacherId)
+      : [...favorites, teacherId];
+    
+    setFavorites(newFavorites);
+    
+    // Save to user metadata
+    try {
+      await supabase.auth.updateUser({
+        data: { favorites: newFavorites }
+      });
+    } catch (error) {
+      console.error('Failed to update favorites', error);
+      toast.error('Failed to save favorite');
+    }
+  };
+
   const handleSaveSettings = async (e) => {
     e.preventDefault();
     setSettingsLoading(true);
@@ -101,10 +162,15 @@ const Dashboard = () => {
       });
       if (authError) throw authError;
 
-      // Update eleves table
+      // Update relevant table
+      const table = role === 'teacher' ? 'professeurs' : 'eleves';
+      const updateData = role === 'teacher' 
+        ? { nom: settingsName }
+        : { nom: settingsName, prenom: settingsPrenom, niveau: settingsNiveau };
+
       const { error: dbError } = await supabase
-        .from('eleves')
-        .update({ nom: settingsName })
+        .from(table)
+        .update(updateData)
         .eq('id', user.id);
       
       if (dbError) throw dbError;
@@ -155,15 +221,20 @@ const Dashboard = () => {
     );
   }
 
-  const sidebarLinks = [
+  const sidebarLinks = role === 'teacher' ? [
+    { name: 'Dashboard', icon: <LayoutDashboard size={20} /> },
+    { name: 'My Students', icon: <Users size={20} /> },
+    { name: 'Schedule', icon: <Calendar size={20} /> },
+    { name: 'Settings', icon: <Settings size={20} /> },
+  ] : [
     { name: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     { name: 'My Sessions', icon: <Calendar size={20} /> },
     { name: 'Find Teachers', icon: <Users size={20} /> },
-    { name: 'Homework', icon: <BookOpen size={20} /> },
+    { name: 'Favorites', icon: <Heart size={20} /> },
     { name: 'Settings', icon: <Settings size={20} /> },
   ];
 
-  const displayName = student?.full_name?.split(' ')[0] || student?.nom?.split(' ')[0] || user.email.split('@')[0];
+  const displayName = profile?.prenom || profile?.nom?.split(' ')[0] || user.email.split('@')[0];
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', backgroundColor: 'var(--color-surface)' }}>
@@ -177,13 +248,9 @@ const Dashboard = () => {
         <div>
           {/* Brand */}
           <div style={{ padding: '8px 16px', marginBottom: '32px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-              <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-primary-600)' }}>
-                Dourous-Net
-              </span>
-            </div>
-            <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-outline)' }}>
-              LEARNING PORTAL
+            <Logo />
+            <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-outline)', marginTop: '8px' }}>
+              {role === 'teacher' ? 'PROFESSOR PORTAL' : 'LEARNING PORTAL'}
             </p>
           </div>
 
@@ -205,31 +272,51 @@ const Dashboard = () => {
         {/* Bottom Section */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {/* CTA Card */}
-          <div style={{
-            backgroundColor: 'var(--color-primary-600)',
-            borderRadius: 'var(--radius-xl)',
-            padding: '20px 16px',
-            marginBottom: '8px',
-          }}>
-            <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.8)', marginBottom: '12px' }}>
-              Ready to learn?
-            </p>
+          {role === 'student' && (
+            <div style={{
+              backgroundColor: 'var(--color-primary-600)',
+              borderRadius: 'var(--radius-xl)',
+              padding: '20px 16px',
+              marginBottom: '8px',
+            }}>
+              <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.8)', marginBottom: '12px' }}>
+                Ready to learn?
+              </p>
+              <button
+                onClick={() => setActiveTab('Find Teachers')}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  backgroundColor: '#ffffff',
+                  color: 'var(--color-primary-600)',
+                  border: 'none',
+                  borderRadius: 'var(--radius-full)',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+              >
+                Book a Session
+              </button>
+            </div>
+          )}
+
+          {/* Additional Navigation Links */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '8px', paddingTop: '8px', borderTop: '1px solid var(--color-outline-variant)' }}>
             <button
-              onClick={() => setActiveTab('Find Teachers')}
-              style={{
-                width: '100%',
-                padding: '10px',
-                backgroundColor: '#ffffff',
-                color: 'var(--color-primary-600)',
-                border: 'none',
-                borderRadius: 'var(--radius-full)',
-                fontSize: '13px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-              }}
+              onClick={() => navigate('/')}
+              className="sidebar-link"
+              style={{ color: 'var(--color-on-surface-variant)' }}
             >
-              Book a Session
+              Back to Home
+            </button>
+            <button
+              onClick={() => navigate('/pricing')}
+              className="sidebar-link"
+              style={{ color: 'var(--color-on-surface-variant)' }}
+            >
+              View Pricing
             </button>
           </div>
 
@@ -268,10 +355,12 @@ const Dashboard = () => {
               color: 'var(--color-on-surface)',
               letterSpacing: '-0.02em',
             }}>
-              Welcome back, {displayName}!
+              {role === 'teacher' ? `Hello, Professor ${displayName}!` : `Welcome back, ${displayName}!`}
             </h1>
             <p style={{ fontSize: '14px', color: 'var(--color-on-surface-variant)', marginTop: '4px' }}>
-              You have {sessions.length} sessions scheduled for this week.
+              {role === 'teacher' 
+                ? `You have ${sessions.length} sessions booked with your students.`
+                : `You have ${sessions.length} sessions scheduled for this week.`}
             </p>
           </div>
 
@@ -322,160 +411,232 @@ const Dashboard = () => {
         {activeTab === 'Dashboard' && (
           <div style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 340px',
+            gridTemplateColumns: role === 'teacher' ? '1fr' : '1fr 340px',
             gap: '32px',
             alignItems: 'start',
           }}>
-            {/* Left: Teachers */}
+            {/* Left Column */}
             <div>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '20px',
-              }}>
-                <h2 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
-                  Available Teachers
-                </h2>
-                <button
-                  onClick={() => setActiveTab('Find Teachers')}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    color: 'var(--color-primary-600)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                  }}
-                >
-                  View all <ChevronRight size={16} />
-                </button>
-              </div>
-
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(2, 1fr)',
-                gap: '16px',
-              }}>
-                {teachers.slice(0, 4).map(teacher => (
-                  <TeacherCard
-                    key={teacher.id}
-                    teacher={teacher}
-                    onBook={() => setSelectedTeacher(teacher)}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Right: Upcoming Sessions + Progress */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {/* Upcoming Sessions */}
-              <div className="card-static" style={{ padding: '20px' }}>
-                <h3 style={{
-                  fontSize: '18px',
-                  fontWeight: 700,
-                  color: 'var(--color-on-surface)',
-                  marginBottom: '16px',
-                }}>
-                  Upcoming Sessions
-                </h3>
-
-                {sessions.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {sessions.slice(0, 3).map(session => (
-                      <SessionCard key={session.id} session={session} />
-                    ))}
+              {role === 'teacher' ? (
+                <>
+                  <div style={{ marginBottom: '24px' }}>
+                    <h2 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: '8px' }}>
+                      Recent Student Activity
+                    </h2>
+                    <p style={{ fontSize: '14px', color: 'var(--color-on-surface-variant)' }}>
+                      Overview of your upcoming teaching sessions and student messages.
+                    </p>
                   </div>
-                ) : (
-                  <div style={{ textAlign: 'center', padding: '32px 0' }}>
-                    <Calendar size={40} style={{ color: 'var(--color-outline-variant)', marginBottom: '12px' }} />
-                    <p style={{ fontSize: '14px', color: 'var(--color-outline)' }}>No sessions scheduled.</p>
+                  
+                  <div className="card-static" style={{ padding: '0' }}>
+                    {sessions.length > 0 ? (
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        {sessions.map((session, idx) => (
+                          <div key={session.id} style={{ 
+                            padding: '16px 24px', 
+                            borderBottom: idx === sessions.length - 1 ? 'none' : '1px solid var(--color-outline-variant)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between'
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                              <div style={{
+                                width: '40px',
+                                height: '40px',
+                                borderRadius: 'var(--radius-full)',
+                                backgroundColor: 'var(--color-primary-50)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'var(--color-primary-600)',
+                                fontWeight: 700
+                              }}>
+                                {session.eleves?.nom?.charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <p style={{ fontWeight: 600, color: 'var(--color-on-surface)' }}>{session.eleves?.nom}</p>
+                                <p style={{ fontSize: '12px', color: 'var(--color-outline)' }}>
+                                  {new Date(session.date_seance).toLocaleDateString()} at {new Date(session.date_seance).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                              {session.devoir_url && (
+                                <a href={session.devoir_url} target="_blank" rel="noreferrer" className="btn-secondary" style={{ padding: '8px 16px', fontSize: '12px' }}>
+                                  View Homework
+                                </a>
+                              )}
+                              <button className="btn-primary" style={{ padding: '8px 16px', fontSize: '12px' }}>
+                                Start Session
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div style={{ padding: '48px', textAlign: 'center' }}>
+                        <Calendar size={48} style={{ color: 'var(--color-outline-variant)', marginBottom: '16px' }} />
+                        <p style={{ color: 'var(--color-outline)' }}>No sessions booked by students yet.</p>
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '20px',
+                  }}>
+                    <h2 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
+                      Available Teachers
+                    </h2>
                     <button
                       onClick={() => setActiveTab('Find Teachers')}
                       style={{
                         background: 'none',
                         border: 'none',
-                        fontSize: '13px',
+                        fontSize: '14px',
                         fontWeight: 600,
                         color: 'var(--color-primary-600)',
                         cursor: 'pointer',
-                        marginTop: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
                       }}
                     >
-                      Book your first one
+                      View all <ChevronRight size={16} />
                     </button>
                   </div>
-                )}
-              </div>
 
-              {/* Overall Progress Card */}
-              <div style={{
-                backgroundColor: 'var(--color-primary-600)',
-                borderRadius: 'var(--radius-xl)',
-                padding: '20px',
-                color: '#ffffff',
-              }}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: '12px',
-                }}>
-                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff' }}>
-                    Overall Progress
-                  </h3>
-                  <span style={{
-                    padding: '4px 12px',
-                    backgroundColor: 'rgba(255,255,255,0.2)',
-                    borderRadius: 'var(--radius-full)',
-                    fontSize: '11px',
-                    fontWeight: 600,
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(2, 1fr)',
+                    gap: '16px',
                   }}>
-                    Level 4
-                  </span>
+                    {teachers.slice(0, 4).map(teacher => (
+                      <TeacherCard
+                        key={teacher.id}
+                        teacher={teacher}
+                        onBook={() => setSelectedTeacher(teacher)}
+                        isFavorite={favorites.includes(teacher.id)}
+                        onToggleFavorite={() => toggleFavorite(teacher.id)}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Right: Upcoming Sessions + Progress (Students only) */}
+            {role === 'student' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {/* Upcoming Sessions */}
+                <div className="card-static" style={{ padding: '20px' }}>
+                  <h3 style={{
+                    fontSize: '18px',
+                    fontWeight: 700,
+                    color: 'var(--color-on-surface)',
+                    marginBottom: '16px',
+                  }}>
+                    Upcoming Sessions
+                  </h3>
+
+                  {sessions.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {sessions.slice(0, 3).map(session => (
+                        <SessionCard key={session.id} session={session} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: '32px 0' }}>
+                      <Calendar size={40} style={{ color: 'var(--color-outline-variant)', marginBottom: '12px' }} />
+                      <p style={{ fontSize: '14px', color: 'var(--color-outline)' }}>No sessions scheduled.</p>
+                      <button
+                        onClick={() => setActiveTab('Find Teachers')}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          color: 'var(--color-primary-600)',
+                          cursor: 'pointer',
+                          marginTop: '8px',
+                        }}
+                      >
+                        Book your first one
+                      </button>
+                    </div>
+                  )}
                 </div>
 
-                <p style={{ fontSize: '13px', opacity: 0.8, marginBottom: '12px' }}>
-                  {sessions.length} of 5 lessons completed this month
-                </p>
-
-                {/* Progress bar */}
+                {/* Overall Progress Card */}
                 <div style={{
-                  width: '100%',
-                  height: '8px',
-                  backgroundColor: 'rgba(255,255,255,0.2)',
-                  borderRadius: 'var(--radius-full)',
-                  overflow: 'hidden',
-                  marginBottom: '16px',
+                  backgroundColor: 'var(--color-primary-600)',
+                  borderRadius: 'var(--radius-xl)',
+                  padding: '20px',
+                  color: '#ffffff',
                 }}>
                   <div style={{
-                    height: '100%',
-                    width: `${Math.min((sessions.length / 5) * 100, 100)}%`,
-                    background: 'linear-gradient(90deg, #4edea3, #6cf8bb)',
-                    borderRadius: 'var(--radius-full)',
-                    transition: 'width 0.6s ease',
-                  }} />
-                </div>
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '12px',
+                  }}>
+                    <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff' }}>
+                      Overall Progress
+                    </h3>
+                    <span style={{
+                      padding: '4px 12px',
+                      backgroundColor: 'rgba(255,255,255,0.2)',
+                      borderRadius: 'var(--radius-full)',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                    }}>
+                      Level 4
+                    </span>
+                  </div>
 
-                <button style={{
-                  width: '100%',
-                  padding: '10px',
-                  backgroundColor: 'rgba(255,255,255,0.15)',
-                  border: '1px solid rgba(255,255,255,0.3)',
-                  borderRadius: 'var(--radius-full)',
-                  color: '#ffffff',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'background 0.2s',
-                }}>
-                  My Certificates
-                </button>
+                  <p style={{ fontSize: '13px', opacity: 0.8, marginBottom: '12px' }}>
+                    {sessions.length} of 5 lessons completed this month
+                  </p>
+
+                  {/* Progress bar */}
+                  <div style={{
+                    width: '100%',
+                    height: '8px',
+                    backgroundColor: 'rgba(255,255,255,0.2)',
+                    borderRadius: 'var(--radius-full)',
+                    overflow: 'hidden',
+                    marginBottom: '16px',
+                  }}>
+                    <div style={{
+                      height: '100%',
+                      width: `${Math.min((sessions.length / 5) * 100, 100)}%`,
+                      background: 'linear-gradient(90deg, #4edea3, #6cf8bb)',
+                      borderRadius: 'var(--radius-full)',
+                      transition: 'width 0.6s ease',
+                    }} />
+                  </div>
+
+                  <button style={{
+                    width: '100%',
+                    padding: '10px',
+                    backgroundColor: 'rgba(255,255,255,0.15)',
+                    border: '1px solid rgba(255,255,255,0.3)',
+                    borderRadius: 'var(--radius-full)',
+                    color: '#ffffff',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'background 0.2s',
+                  }}>
+                    My Certificates
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -544,22 +705,79 @@ const Dashboard = () => {
                   key={teacher.id}
                   teacher={teacher}
                   onBook={() => setSelectedTeacher(teacher)}
+                  isFavorite={favorites.includes(teacher.id)}
+                  onToggleFavorite={() => toggleFavorite(teacher.id)}
                 />
               ))}
             </div>
           </div>
         )}
 
-        {/* ═══ HOMEWORK TAB ═══ */}
-        {activeTab === 'Homework' && (
-          <div className="animate-fade-in" style={{ textAlign: 'center', padding: '80px 0' }}>
-            <BookOpen size={64} style={{ color: 'var(--color-outline-variant)', marginBottom: '16px' }} />
-            <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: '8px' }}>
-              Homework & Resources
-            </h2>
-            <p style={{ fontSize: '14px', color: 'var(--color-on-surface-variant)', maxWidth: '400px', margin: '0 auto' }}>
-              Access your uploaded materials, PDFs, and past session recordings here. Coming soon!
-            </p>
+        {/* ═══ MY STUDENTS TAB (Teachers) ═══ */}
+        {activeTab === 'My Students' && (
+          <div className="animate-fade-in">
+             <div style={{ marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: '8px' }}>
+                My Students
+              </h2>
+              <p style={{ fontSize: '14px', color: 'var(--color-on-surface-variant)' }}>
+                Management list of your students and their progress.
+              </p>
+            </div>
+            
+            <div className="card-static" style={{ padding: '0' }}>
+              {sessions.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  {/* Logic to group by unique students could go here */}
+                  {[...new Set(sessions.map(s => s.eleves?.id))].map(studentId => {
+                    const studentSession = sessions.find(s => s.eleves?.id === studentId);
+                    return (
+                      <div key={studentId} style={{ padding: '16px 24px', borderBottom: '1px solid var(--color-outline-variant)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                          <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--color-primary-50)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-primary-600)', fontWeight: 700 }}>
+                            {studentSession.eleves?.nom?.charAt(0)}
+                          </div>
+                          <div>
+                            <p style={{ fontWeight: 600 }}>{studentSession.eleves?.nom}</p>
+                            <p style={{ fontSize: '12px', color: 'var(--color-outline)' }}>{studentSession.eleves?.email}</p>
+                          </div>
+                        </div>
+                        <button className="btn-secondary" style={{ padding: '8px 16px', fontSize: '12px' }}>
+                          View Student Profile
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div style={{ padding: '48px', textAlign: 'center' }}>
+                  <Users size={48} style={{ color: 'var(--color-outline-variant)', marginBottom: '16px' }} />
+                  <p>You don't have any students yet.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ═══ SCHEDULE TAB (Teachers) ═══ */}
+        {activeTab === 'Schedule' && (
+          <div className="animate-fade-in">
+             <div style={{ marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: '8px' }}>
+                Your Teaching Schedule
+              </h2>
+              <p style={{ fontSize: '14px', color: 'var(--color-on-surface-variant)' }}>
+                Manage your upcoming classes and availability.
+              </p>
+            </div>
+            
+            <div className="card-static" style={{ padding: '24px' }}>
+               {/* Calendar component would go here */}
+               <div style={{ textAlign: 'center', padding: '48px' }}>
+                 <Calendar size={48} style={{ color: 'var(--color-outline-variant)', marginBottom: '16px' }} />
+                 <p>Interactive Calendar View Coming Soon!</p>
+               </div>
+            </div>
           </div>
         )}
 
@@ -570,16 +788,51 @@ const Dashboard = () => {
               Account Settings
             </h2>
             <form onSubmit={handleSaveSettings} className="card-static" style={{ padding: '24px', maxWidth: '560px' }}>
-              <div style={{ marginBottom: '20px' }}>
-                <label className="label-caps" style={{ display: 'block', marginBottom: '8px' }}>Full Name</label>
-                <input 
-                  type="text" 
-                  className="input-field" 
-                  value={settingsName} 
-                  onChange={(e) => setSettingsName(e.target.value)} 
-                  required 
-                />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+                <div>
+                  <label className="label-caps" style={{ display: 'block', marginBottom: '8px' }}>First Name</label>
+                  <input 
+                    type="text" 
+                    className="input-field" 
+                    value={settingsPrenom} 
+                    onChange={(e) => setSettingsPrenom(e.target.value)} 
+                    required 
+                  />
+                </div>
+                <div>
+                  <label className="label-caps" style={{ display: 'block', marginBottom: '8px' }}>Last Name</label>
+                  <input 
+                    type="text" 
+                    className="input-field" 
+                    value={settingsName} 
+                    onChange={(e) => setSettingsName(e.target.value)} 
+                    required 
+                  />
+                </div>
               </div>
+              
+              {role === 'student' && (
+                <div style={{ marginBottom: '20px' }}>
+                  <label className="label-caps" style={{ display: 'block', marginBottom: '8px' }}>Grade Level (Niveau)</label>
+                  <select 
+                    className="input-field" 
+                    value={settingsNiveau} 
+                    onChange={(e) => setSettingsNiveau(e.target.value)}
+                    style={{ appearance: 'none', backgroundImage: 'none' }}
+                  >
+                    <option value="">Select your level</option>
+                    <option value="6ème">6ème</option>
+                    <option value="5ème">5ème</option>
+                    <option value="4ème">4ème</option>
+                    <option value="3ème">3ème</option>
+                    <option value="2nde">2nde</option>
+                    <option value="1ère">1ère</option>
+                    <option value="Terminale">Terminale</option>
+                    <option value="Autre">Autre</option>
+                  </select>
+                </div>
+              )}
+
               <div style={{ marginBottom: '20px' }}>
                 <label className="label-caps" style={{ display: 'block', marginBottom: '8px' }}>Email Address</label>
                 <input 

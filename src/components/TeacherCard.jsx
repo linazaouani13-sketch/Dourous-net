@@ -16,7 +16,7 @@ const getSubjectStyle = (specialite) => {
   return subjectColors[specialite] || { bg: '#e8f0ff', color: '#0058be' };
 };
 
-const TeacherCard = ({ teacher, onBook }) => {
+const TeacherCard = ({ teacher, onBook, isFavorite, onToggleFavorite }) => {
   const subjectStyle = getSubjectStyle(teacher.specialite);
 
   return (
@@ -117,21 +117,24 @@ const TeacherCard = ({ teacher, onBook }) => {
         >
           Book Session
         </button>
-        <button style={{
-          width: '40px',
-          height: '40px',
-          borderRadius: 'var(--radius-full)',
-          border: '1px solid var(--color-outline-variant)',
-          backgroundColor: 'transparent',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          color: 'var(--color-outline)',
-          transition: 'all 0.2s',
-          flexShrink: 0,
-        }}>
-          <Heart size={18} />
+        <button 
+          onClick={onToggleFavorite}
+          style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: 'var(--radius-full)',
+            border: isFavorite ? '1px solid var(--color-primary-200)' : '1px solid var(--color-outline-variant)',
+            backgroundColor: isFavorite ? 'var(--color-primary-50)' : 'transparent',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            color: isFavorite ? 'var(--color-primary-600)' : 'var(--color-outline)',
+            transition: 'all 0.2s',
+            flexShrink: 0,
+          }}
+        >
+          <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} />
         </button>
       </div>
     </div>

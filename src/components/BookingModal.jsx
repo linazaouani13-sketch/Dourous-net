@@ -10,16 +10,52 @@ const BookingModal = ({ teacher, onClose, onSuccess }) => {
   const [file, setFile] = useState(null);
 
   const [loading, setLoading] = useState(false);
+  const [teacherSessions, setTeacherSessions] = useState([]);
+  const [fetchingAvailability, setFetchingAvailability] = useState(true);
+
+  React.useEffect(() => {
+    const fetchTeacherSessions = async () => {
+      try {
+        const { data } = await supabase
+          .from('seances')
+          .select('date_seance')
+          .eq('professeur_id', teacher.id);
+        setTeacherSessions(data || []);
+      } catch (err) {
+        console.error("Error fetching availability:", err);
+      } finally {
+        setFetchingAvailability(false);
+      }
+    };
+    fetchTeacherSessions();
+  }, [teacher.id]);
 
   const today = new Date();
   const dateSlots = Array.from({ length: 3 }, (_, i) => {
     const d = new Date(today);
     d.setDate(d.getDate() + i);
+    const dateStr = d.toISOString().split('T')[0];
+    const time = ['10:00 AM', '02:30 PM', '11:00 AM'][i];
+    
+    // Check if this slot is already taken
+    const timePart = time.split(' ')[0];
+    const isPM = time.includes('PM');
+    let [hours, minutes] = timePart.split(':').map(Number);
+    if (isPM && hours !== 12) hours += 12;
+    if (!isPM && hours === 12) hours = 0;
+    const fullSlotStr = `${dateStr}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
+    
+    const isBooked = teacherSessions.some(s => {
+      const sDate = new Date(s.date_seance).toISOString().split('.')[0].replace('Z', '');
+      return sDate.startsWith(fullSlotStr.substring(0, 16));
+    });
+
     return {
       label: d.toLocaleDateString('en-US', { weekday: 'short' }),
       day: d.getDate(),
-      time: ['10:00 AM', '02:30 PM', '11:00 AM'][i],
-      fullDate: d.toISOString().split('T')[0],
+      time,
+      fullDate: dateStr,
+      isAvailable: !isBooked
     };
   });
 
@@ -189,41 +225,67 @@ const BookingModal = ({ teacher, onClose, onSuccess }) => {
                 SELECT DATE & TIME
               </label>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-                {dateSlots.map((slot, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setSelectedSlotIndex(i)}
-                    style={{
-                      padding: '14px 8px',
-                      borderRadius: 'var(--radius-xl)',
-                      border: selectedSlotIndex === i
-                        ? '2px solid var(--color-primary-600)'
-                        : '1px solid var(--color-outline-variant)',
-                      backgroundColor: selectedSlotIndex === i
-                        ? 'var(--color-primary-50)'
-                        : 'var(--color-surface-container-lowest)',
-                      cursor: 'pointer',
-                      textAlign: 'center',
-                      transition: 'all 0.2s',
-                    }}
-                  >
-                    <p style={{
-                      fontSize: '14px',
-                      fontWeight: 700,
-                      color: selectedSlotIndex === i ? 'var(--color-primary-600)' : 'var(--color-on-surface)',
-                      marginBottom: '4px',
-                    }}>
-                      {slot.label}, {slot.day}
-                    </p>
-                    <p style={{
-                      fontSize: '12px',
-                      color: selectedSlotIndex === i ? 'var(--color-primary-600)' : 'var(--color-outline)',
-                    }}>
-                      {slot.time}
-                    </p>
-                  </button>
-                ))}
+                {fetchingAvailability ? (
+                  <div style={{ gridColumn: 'span 3', textAlign: 'center', padding: '20px' }}>
+                    <Loader2 size={24} className="animate-spin" style={{ color: 'var(--color-primary-600)' }} />
+                  </div>
+                ) : (
+                  dateSlots.map((slot, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      disabled={!slot.isAvailable}
+                      onClick={() => setSelectedSlotIndex(i)}
+                      style={{
+                        padding: '14px 8px',
+                        borderRadius: 'var(--radius-xl)',
+                        border: selectedSlotIndex === i
+                          ? '2px solid var(--color-primary-600)'
+                          : '1px solid var(--color-outline-variant)',
+                        backgroundColor: !slot.isAvailable 
+                          ? 'var(--color-surface-container-high)' 
+                          : selectedSlotIndex === i
+                            ? 'var(--color-primary-50)'
+                            : 'var(--color-surface-container-lowest)',
+                        cursor: slot.isAvailable ? 'pointer' : 'not-allowed',
+                        textAlign: 'center',
+                        transition: 'all 0.2s',
+                        opacity: slot.isAvailable ? 1 : 0.6,
+                        position: 'relative'
+                      }}
+                    >
+                      {!slot.isAvailable && (
+                        <span style={{
+                          position: 'absolute',
+                          top: '4px',
+                          right: '4px',
+                          fontSize: '8px',
+                          fontWeight: 700,
+                          color: 'var(--color-error-600)',
+                          backgroundColor: 'var(--color-error-50)',
+                          padding: '2px 4px',
+                          borderRadius: '4px'
+                        }}>
+                          TAKEN
+                        </span>
+                      )}
+                      <p style={{
+                        fontSize: '14px',
+                        fontWeight: 700,
+                        color: selectedSlotIndex === i ? 'var(--color-primary-600)' : 'var(--color-on-surface)',
+                        marginBottom: '4px',
+                      }}>
+                        {slot.label}, {slot.day}
+                      </p>
+                      <p style={{
+                        fontSize: '12px',
+                        color: selectedSlotIndex === i ? 'var(--color-primary-600)' : 'var(--color-outline)',
+                      }}>
+                        {slot.time}
+                      </p>
+                    </button>
+                  ))
+                )}
               </div>
             </div>
 

@@ -7,7 +7,8 @@ import { supabase } from '../lib/supabaseClient';
 import toast from 'react-hot-toast';
 
 const Signup = () => {
-  const [fullName, setFullName] = useState('');
+  const [nom, setNom] = useState('');
+  const [prenom, setPrenom] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('student');
@@ -26,7 +27,8 @@ const Signup = () => {
         password,
         options: {
           data: {
-            full_name: fullName,
+            nom: nom,
+            prenom: prenom,
             role: role
           }
         }
@@ -35,13 +37,13 @@ const Signup = () => {
 
       if (authData?.user) {
         const table = role === 'teacher' ? 'professeurs' : 'eleves';
+        const profileData = role === 'teacher' 
+          ? { id: authData.user.id, nom: `${prenom} ${nom}`, email: email }
+          : { id: authData.user.id, nom: nom, prenom: prenom, email: email };
+
         const { error: profileError } = await supabase
           .from(table)
-          .insert({
-            id: authData.user.id,
-            nom: fullName,
-            email: email
-          });
+          .insert(profileData);
 
         if (profileError) {
           console.error('Profile creation warning:', profileError.message);
@@ -256,20 +258,36 @@ const Signup = () => {
                 </div>
               </div>
 
-              {/* Full Name */}
-              <div style={{ marginBottom: '20px' }}>
-                <label className="label-caps" style={{ display: 'block', marginBottom: '8px', fontSize: '11px' }}>
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="input-field"
-                  placeholder="John Doe"
-                  style={{ padding: '14px 16px' }}
-                />
+              {/* Name Fields */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+                <div>
+                  <label className="label-caps" style={{ display: 'block', marginBottom: '8px', fontSize: '11px' }}>
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={prenom}
+                    onChange={(e) => setPrenom(e.target.value)}
+                    className="input-field"
+                    placeholder="John"
+                    style={{ padding: '14px 16px' }}
+                  />
+                </div>
+                <div>
+                  <label className="label-caps" style={{ display: 'block', marginBottom: '8px', fontSize: '11px' }}>
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={nom}
+                    onChange={(e) => setNom(e.target.value)}
+                    className="input-field"
+                    placeholder="Doe"
+                    style={{ padding: '14px 16px' }}
+                  />
+                </div>
               </div>
 
               {/* Email */}
