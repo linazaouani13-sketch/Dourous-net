@@ -35,13 +35,29 @@ export const AuthProvider = ({ children }) => {
     }
   });
 
+  const toggleFavorite = async (teacherId) => {
+    if (!user) return;
+    const currentFavorites = user.user_metadata?.favorites || [];
+    const newFavorites = currentFavorites.includes(teacherId)
+      ? currentFavorites.filter(id => id !== teacherId)
+      : [...currentFavorites, teacherId];
+
+    const { error } = await supabase.auth.updateUser({
+      data: { favorites: newFavorites }
+    });
+    
+    if (error) throw error;
+    return newFavorites;
+  };
+
   const value = {
     user,
     loading,
     signUp,
     signIn,
     signOut,
-    signInWithProvider
+    signInWithProvider,
+    toggleFavorite
   };
 
   return (

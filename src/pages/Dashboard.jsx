@@ -8,14 +8,14 @@ import BookingModal from '../components/BookingModal';
 import Footer from '../components/Footer';
 import Logo from '../components/Logo';
 import {
-  Users, Calendar, Loader2, Search,
+  Users, Calendar, Loader2, Search, Plus,
   LayoutDashboard, BookOpen, Settings, Heart,
   LogOut, HelpCircle, ChevronRight, Award
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Dashboard = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, toggleFavorite } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [student, setStudent] = useState(null);
@@ -30,7 +30,7 @@ const Dashboard = () => {
   const [settingsNiveau, setSettingsNiveau] = useState('');
   const [settingsLanguage, setSettingsLanguage] = useState('en');
   const [settingsLoading, setSettingsLoading] = useState(false);
-  const [favorites, setFavorites] = useState([]);
+  const favorites = user?.user_metadata?.favorites || [];
 
   const fetchData = useCallback(async () => {
     try {
@@ -46,13 +46,16 @@ const Dashboard = () => {
           .single();
 
         if (profError && profError.code === 'PGRST116') {
-          // Auto-create if missing (though signup should handle it)
+          // Auto-create if missing
           const { data: newProf } = await supabase
             .from('professeurs')
             .insert({
               id: user.id,
-              nom: user.user_metadata?.nom || user.user_metadata?.full_name || user.email.split('@')[0],
-              email: user.email
+              nom: user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ')[1] || user.email.split('@')[0],
+              prenom: user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || 'Teacher',
+              matiere: 'General',
+              email: user.email,
+              tarif: 45
             })
             .select()
             .single();
@@ -116,7 +119,7 @@ const Dashboard = () => {
         setSettingsNiveau(profile.niveau || '');
       }
       setSettingsLanguage(user.user_metadata?.language || 'en');
-      setFavorites(user.user_metadata?.favorites || []);
+      // Removed local favorites sync
 
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -134,21 +137,11 @@ const Dashboard = () => {
     fetchData();
   };
 
-  const toggleFavorite = async (teacherId) => {
-    const newFavorites = favorites.includes(teacherId)
-      ? favorites.filter(id => id !== teacherId)
-      : [...favorites, teacherId];
-    
-    setFavorites(newFavorites);
-    
-    // Save to user metadata
+  const handleToggleFavorite = async (teacherId) => {
     try {
-      await supabase.auth.updateUser({
-        data: { favorites: newFavorites }
-      });
+      await toggleFavorite(teacherId);
     } catch (error) {
-      console.error('Failed to update favorites', error);
-      toast.error('Failed to save favorite');
+      toast.error('Failed to update favorites');
     }
   };
 
@@ -350,90 +343,107 @@ const Dashboard = () => {
         ))}
       </nav>
 
-      {/* ═══ MAIN CONTENT ═══ */}
       <main className="dashboard-main" style={{
         flex: 1,
         marginLeft: '240px',
         padding: '32px 40px',
         minHeight: '100vh',
       }}>
-        {/* Top Bar */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '40px',
-        }}>
-          <div>
-            <h1 style={{
-              fontSize: '28px',
-              fontWeight: 700,
-              color: 'var(--color-on-surface)',
-              letterSpacing: '-0.02em',
-            }}>
-              {role === 'teacher' ? `Hello, Professor ${displayName}!` : `Welcome back, ${displayName}!`}
-              <span 
-                className={role === 'teacher' ? 'tag tag-primary' : 'tag tag-secondary'} 
-                style={{ 
-                  marginLeft: '12px', 
-                  verticalAlign: 'middle',
-                  fontSize: '11px',
-                  padding: '4px 10px'
-                }}
+        {/* Mobile Header */}
+        <div className="mobile-only">
+          <div className="mobile-header">
+            <Logo fontSize="16px" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ position: 'relative' }}>
+                <div style={{ position: 'absolute', top: '-2px', right: '-2px', width: '8px', height: '8px', backgroundColor: 'var(--color-error-500)', borderRadius: '50%', border: '2px solid white' }} />
+                <Search size={22} style={{ color: 'var(--color-on-surface)' }} />
+              </div>
+              <div 
+                style={{ width: '36px', height: '36px', borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--color-outline-variant)' }}
+                onClick={() => navigate('/profile')}
               >
-                {role === 'teacher' ? 'PROFESSOR' : 'STUDENT'}
-              </span>
-            </h1>
-            <p style={{ fontSize: '14px', color: 'var(--color-on-surface-variant)', marginTop: '4px' }}>
-              {role === 'teacher' 
-                ? `You have ${sessions.length} sessions booked with your students.`
-                : `You have ${sessions.length} sessions scheduled for this week.`}
-            </p>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            {/* Search */}
-            <div style={{ position: 'relative' }} className="mobile-hide">
-              <Search size={16} style={{
-                position: 'absolute',
-                right: '14px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: 'var(--color-outline)',
-              }} />
-              <input
-                type="text"
-                placeholder="Search for courses..."
-                className="input-field"
-                style={{
-                  width: '240px',
-                  padding: '10px 40px 10px 16px',
-                  fontSize: '13px',
-                  borderRadius: 'var(--radius-full)',
-                }}
-              />
-            </div>
-
-            {/* Avatar */}
-            <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: 'var(--radius-full)',
-              overflow: 'hidden',
-              border: '2px solid var(--color-outline-variant)',
-              cursor: 'pointer',
-            }}
-              onClick={() => navigate('/profile')}
-            >
-              <img
-                src={`https://api.dicebear.com/7.x/initials/svg?seed=${displayName}&backgroundColor=f2f3fd&textColor=424754`}
-                alt="Profile"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
+                <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${displayName}`} alt="avatar" />
+              </div>
             </div>
           </div>
         </div>
 
+        {/* Desktop Top Bar */}
+        <div className="desktop-only">
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '40px',
+          }}>
+            <div>
+              <h1 style={{
+                fontSize: '28px',
+                fontWeight: 700,
+                color: 'var(--color-on-surface)',
+                letterSpacing: '-0.02em',
+              }}>
+                {role === 'teacher' ? `Hello, Professor ${displayName}!` : `Welcome back, ${displayName}!`}
+                <span 
+                  className={role === 'teacher' ? 'tag tag-primary' : 'tag tag-secondary'} 
+                  style={{ 
+                    marginLeft: '12px', 
+                    verticalAlign: 'middle',
+                    fontSize: '11px',
+                    padding: '4px 10px'
+                  }}
+                >
+                  {role === 'teacher' ? 'PROFESSOR' : 'STUDENT'}
+                </span>
+              </h1>
+              <p style={{ fontSize: '14px', color: 'var(--color-on-surface-variant)', marginTop: '4px' }}>
+                {role === 'teacher' 
+                  ? `You have ${sessions.length} sessions booked with your students.`
+                  : `You have ${sessions.length} sessions scheduled for this week.`}
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ position: 'relative' }}>
+                <Search size={16} style={{
+                  position: 'absolute',
+                  right: '14px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'var(--color-outline)',
+                }} />
+                <input
+                  type="text"
+                  placeholder="Search for courses..."
+                  className="input-field"
+                  style={{
+                    width: '240px',
+                    padding: '10px 40px 10px 16px',
+                    fontSize: '13px',
+                    borderRadius: 'var(--radius-full)',
+                  }}
+                />
+              </div>
+
+              <div style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: 'var(--radius-full)',
+                overflow: 'hidden',
+                border: '2px solid var(--color-outline-variant)',
+                cursor: 'pointer',
+              }}
+                onClick={() => navigate('/profile')}
+              >
+                <img
+                  src={`https://api.dicebear.com/7.x/initials/svg?seed=${displayName}&backgroundColor=f2f3fd&textColor=424754`}
+                  alt="Profile"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
         {/* ═══ OVERVIEW TAB ═══ */}
         {activeTab === 'Dashboard' && (
           <div className="grid-2-col" style={{
@@ -444,6 +454,44 @@ const Dashboard = () => {
           }}>
             {/* Left Column */}
             <div>
+              {/* Mobile Welcome Message */}
+              <div className="lg:hidden" style={{ marginBottom: '24px' }}>
+                <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
+                  Welcome back, {profile?.prenom || displayName}!
+                </h2>
+                <p style={{ fontSize: '13px', color: 'var(--color-on-surface-variant)', marginTop: '4px' }}>
+                  Ready to continue your learning journey today?
+                </p>
+              </div>
+
+              {/* Mobile Stats Grid */}
+              {role === 'student' && (
+                <div className="mobile-only">
+                  <div className="mobile-stat-grid">
+                    <div className="mobile-stat-card" style={{ backgroundColor: 'var(--color-primary-600)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <Calendar size={20} color="white" />
+                        <span style={{ fontSize: '10px', opacity: 0.8 }}>THIS WEEK</span>
+                      </div>
+                      <div>
+                        <p style={{ fontSize: '20px', fontWeight: 700 }}>12h</p>
+                        <p style={{ fontSize: '11px', opacity: 0.9 }}>Study Time</p>
+                      </div>
+                    </div>
+                    <div className="mobile-stat-card" style={{ backgroundColor: '#4edea3' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <Award size={20} color="white" />
+                        <span style={{ fontSize: '10px', opacity: 0.8 }}>POINTS</span>
+                      </div>
+                      <div>
+                        <p style={{ fontSize: '20px', fontWeight: 700 }}>450</p>
+                        <p style={{ fontSize: '11px', opacity: 0.9 }}>XP Points</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {role === 'teacher' ? (
                 <>
                   <div style={{ marginBottom: '24px' }}>
@@ -537,24 +585,44 @@ const Dashboard = () => {
                     </button>
                   </div>
 
-                  <div className="grid-2-col" style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(2, 1fr)',
-                    gap: '16px',
-                  }}>
-                    {teachers.slice(0, 4).map(teacher => (
-                      <TeacherCard
-                        key={teacher.id}
-                        teacher={teacher}
-                        onBook={() => setSelectedTeacher(teacher)}
-                        isFavorite={favorites.includes(teacher.id)}
-                        onToggleFavorite={() => toggleFavorite(teacher.id)}
-                      />
-                    ))}
+                  {/* Desktop Grid */}
+                  <div className="desktop-only">
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(2, 1fr)',
+                      gap: '20px',
+                    }}>
+                      {teachers.slice(0, 4).map(teacher => (
+                        <TeacherCard
+                          key={teacher.id}
+                          teacher={teacher}
+                          onBook={() => setSelectedTeacher(teacher)}
+                          isFavorite={favorites.includes(teacher.id)}
+                          onToggleFavorite={() => handleToggleFavorite(teacher.id)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Mobile Horizontal Scroll */}
+                  <div className="mobile-only">
+                    <div className="horizontal-scroll">
+                      {teachers.slice(0, 4).map(teacher => (
+                        <div key={teacher.id} style={{ minWidth: '240px', flex: '0 0 auto' }}>
+                          <TeacherCard
+                            teacher={teacher}
+                            onBook={() => setSelectedTeacher(teacher)}
+                            isFavorite={favorites.includes(teacher.id)}
+                            onToggleFavorite={() => handleToggleFavorite(teacher.id)}
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </>
               )}
             </div>
+
 
             {/* Right: Upcoming Sessions + Progress (Students only) */}
             {role === 'student' && (
@@ -599,67 +667,48 @@ const Dashboard = () => {
                 </div>
 
                 {/* Overall Progress Card */}
-                <div style={{
-                  backgroundColor: 'var(--color-primary-600)',
-                  borderRadius: 'var(--radius-xl)',
-                  padding: '20px',
-                  color: '#ffffff',
-                }}>
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '12px',
-                  }}>
-                    <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff' }}>
-                      Overall Progress
+                <div className="card-static" style={{ padding: '20px', backgroundColor: '#ffffff' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-on-surface)' }}>
+                      Monthly Goal
                     </h3>
-                    <span style={{
-                      padding: '4px 12px',
-                      backgroundColor: 'rgba(255,255,255,0.2)',
-                      borderRadius: 'var(--radius-full)',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                    }}>
-                      Level 4
+                    <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-primary-600)' }}>
+                      60%
                     </span>
                   </div>
 
-                  <p style={{ fontSize: '13px', opacity: 0.8, marginBottom: '12px' }}>
-                    {sessions.length} of 5 lessons completed this month
+                  <p style={{ fontSize: '12px', color: 'var(--color-outline)', marginBottom: '12px' }}>
+                    12 of 20 hours completed
                   </p>
 
-                  {/* Progress bar */}
                   <div style={{
                     width: '100%',
                     height: '8px',
-                    backgroundColor: 'rgba(255,255,255,0.2)',
+                    backgroundColor: 'var(--color-surface-container-low)',
                     borderRadius: 'var(--radius-full)',
                     overflow: 'hidden',
                     marginBottom: '16px',
                   }}>
                     <div style={{
                       height: '100%',
-                      width: `${Math.min((sessions.length / 5) * 100, 100)}%`,
-                      background: 'linear-gradient(90deg, #4edea3, #6cf8bb)',
+                      width: '60%',
+                      backgroundColor: 'var(--color-primary-600)',
                       borderRadius: 'var(--radius-full)',
-                      transition: 'width 0.6s ease',
                     }} />
                   </div>
 
                   <button style={{
                     width: '100%',
-                    padding: '10px',
-                    backgroundColor: 'rgba(255,255,255,0.15)',
-                    border: '1px solid rgba(255,255,255,0.3)',
+                    padding: '8px',
+                    fontSize: '12px',
                     borderRadius: 'var(--radius-full)',
-                    color: '#ffffff',
-                    fontSize: '13px',
-                    fontWeight: 600,
+                    backgroundColor: 'var(--color-primary-50)',
+                    border: 'none',
+                    color: 'var(--color-primary-700)',
+                    fontWeight: 700,
                     cursor: 'pointer',
-                    transition: 'background 0.2s',
                   }}>
-                    My Certificates
+                    Edit Goal
                   </button>
                 </div>
               </div>
@@ -735,7 +784,7 @@ const Dashboard = () => {
                     teacher={teacher}
                     onBook={() => setSelectedTeacher(teacher)}
                     isFavorite={true}
-                    onToggleFavorite={() => toggleFavorite(teacher.id)}
+                    onToggleFavorite={() => handleToggleFavorite(teacher.id)}
                   />
                 ))}
               </div>
@@ -751,7 +800,7 @@ const Dashboard = () => {
                   teacher={teacher}
                   onBook={() => setSelectedTeacher(teacher)}
                   isFavorite={favorites.includes(teacher.id)}
-                  onToggleFavorite={() => toggleFavorite(teacher.id)}
+                  onToggleFavorite={() => handleToggleFavorite(teacher.id)}
                 />
               ))}
             </div>
@@ -849,7 +898,7 @@ const Dashboard = () => {
                     teacher={teacher}
                     onBook={() => setSelectedTeacher(teacher)}
                     isFavorite={true}
-                    onToggleFavorite={() => toggleFavorite(teacher.id)}
+                    onToggleFavorite={() => handleToggleFavorite(teacher.id)}
                   />
                 ))}
               </div>
@@ -986,6 +1035,30 @@ const Dashboard = () => {
             </form>
           </div>
         )}
+
+        {/* Floating Action Button (FAB) - Mobile only */}
+        <button
+          onClick={() => setActiveTab('Find Teachers')}
+          className="lg:hidden"
+          style={{
+            position: 'fixed',
+            right: '20px',
+            bottom: '90px',
+            width: '56px',
+            height: '56px',
+            borderRadius: 'var(--radius-full)',
+            backgroundColor: 'var(--color-primary-600)',
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: 'var(--shadow-lg)',
+            border: 'none',
+            zIndex: 999,
+          }}
+        >
+          <Plus size={28} />
+        </button>
 
         {/* Footer */}
         <div style={{ marginTop: '60px' }}>

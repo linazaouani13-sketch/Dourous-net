@@ -1,80 +1,146 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const commonModulesData = [
-  { name: 'Mathematics', icon: '📐', color: '#E3F2FD' },
-  { name: 'Physics', icon: '⚛️', color: '#F3E5F5' },
-  { name: 'Arabic', icon: '🕌', color: '#E8F5E9' },
-  { name: 'French', icon: '🇫🇷', color: '#FFF3E0' },
-  { name: 'English', icon: '🇬🇧', color: '#E1F5FE' },
-  { name: 'Science', icon: '🧪', color: '#FCE4EC' },
+  { name: 'Python', icon: '🐍', color: '#FFF9C4', count: 12 },
+  { name: 'Java', icon: '☕', color: '#FFE0B2', count: 8 },
+  { name: 'Web Dev', icon: '💻', color: '#E8F5E9', count: 15 },
+  { name: 'Data Structures', icon: '🌳', color: '#E1F5FE', count: 6 },
+  { name: 'AI & ML', icon: '🤖', color: '#F3E5F5', count: 4 },
+  { name: 'Networking', icon: '🌐', color: '#E0F2F1', count: 5 },
 ];
 
-const CommonModules = ({ title = "Common Modules", showTitle = true }) => {
+const CommonModules = ({ title = "Top Categories", showTitle = true }) => {
+  const navigate = useNavigate();
+
+  const handleCategoryClick = (categoryName) => {
+    navigate(`/teachers?category=${encodeURIComponent(categoryName)}`);
+  };
+
   return (
-    <div style={{ marginBottom: '32px', width: '100%' }}>
+    <div style={{ marginBottom: '60px', width: '100%' }}>
       {showTitle && (
-        <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: '16px' }}>
-          {title}
-        </h3>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <h2 style={{ 
+            fontSize: '32px', 
+            fontWeight: 800, 
+            color: '#1a1b3a', 
+            marginBottom: '12px',
+            letterSpacing: '-0.02em'
+          }}>
+            {title}
+          </h2>
+          <p style={{ 
+            fontSize: '14px', 
+            color: 'var(--color-outline)', 
+            maxWidth: '600px', 
+            margin: '0 auto' 
+          }}>
+            Explore our curated selection of high-quality computer science courses tailored for your success.
+          </p>
+        </div>
       )}
+
       <div 
         className="custom-scrollbar"
         style={{ 
           display: 'flex', 
-          gap: '12px', 
+          gap: '20px', 
           overflowX: 'auto', 
-          paddingBottom: '12px',
-          paddingLeft: '4px', // Prevent clipping of shadows
-          paddingTop: '4px',
+          paddingBottom: '32px',
+          paddingTop: '8px',
+          justifyContent: 'center',
+          msOverflowStyle: 'none',
+          scrollbarWidth: 'none',
         }}
       >
         <style>{`
-          .custom-scrollbar::-webkit-scrollbar { height: 6px; }
-          .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-          .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--color-outline-variant); border-radius: 10px; }
+          .custom-scrollbar::-webkit-scrollbar { display: none; }
         `}</style>
+        
         {commonModulesData.map((module) => (
           <div 
             key={module.name} 
-            className="card-static"
+            onClick={() => handleCategoryClick(module.name)}
             style={{
-              minWidth: '140px',
-              padding: '16px',
+              minWidth: '180px',
+              padding: '32px 20px',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: '12px',
+              backgroundColor: '#f4f7fa',
+              borderRadius: '16px',
+              transition: 'all 0.3s ease',
               cursor: 'pointer',
-              backgroundColor: 'var(--color-surface-container-lowest)',
-              transition: 'all 0.2s ease',
+              border: '1px solid transparent',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-              e.currentTarget.style.borderColor = 'var(--color-primary-600)';
-              e.currentTarget.style.boxShadow = 'var(--shadow-md)';
+              e.currentTarget.style.backgroundColor = '#ffffff';
+              e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.05)';
+              e.currentTarget.style.transform = 'translateY(-5px)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.borderColor = 'var(--color-outline-variant)';
+              e.currentTarget.style.backgroundColor = '#f4f7fa';
               e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.transform = 'translateY(0)';
             }}
           >
+            {/* White Circle for Icon */}
             <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: 'var(--radius-lg)',
-              backgroundColor: module.color,
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              backgroundColor: '#ffffff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '24px'
+              fontSize: '28px',
+              marginBottom: '20px',
+              boxShadow: '0 4px 10px rgba(0,0,0,0.03)',
             }}>
               {module.icon}
             </div>
-            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-on-surface)', textAlign: 'center' }}>
+            
+            <h4 style={{ 
+              fontSize: '15px', 
+              fontWeight: 700, 
+              color: '#1a1b3a', 
+              textAlign: 'center',
+              marginBottom: '6px',
+              lineHeight: 1.2,
+            }}>
               {module.name}
+            </h4>
+            
+            <span style={{ 
+              fontSize: '12px', 
+              color: 'var(--color-outline)', 
+              fontWeight: 500 
+            }}>
+              {module.count} Courses
             </span>
           </div>
+        ))}
+      </div>
+
+      {/* Pagination Dots */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        gap: '8px', 
+        marginTop: '12px' 
+      }}>
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div 
+            key={i} 
+            style={{
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              backgroundColor: i === 6 ? '#1a1b3a' : '#d1d5db',
+              transition: 'all 0.2s',
+            }}
+          />
         ))}
       </div>
     </div>
@@ -82,3 +148,4 @@ const CommonModules = ({ title = "Common Modules", showTitle = true }) => {
 };
 
 export default CommonModules;
+

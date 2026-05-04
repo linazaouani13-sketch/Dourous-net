@@ -47,7 +47,7 @@ const Home = () => {
             gridTemplateColumns: '1fr 1fr',
             gap: '64px',
             alignItems: 'center',
-          }}>
+          }} className="grid-responsive">
             {/* Left: Text Content */}
             <div className="animate-fade-in-up" style={{ maxWidth: '560px' }}>
               {/* Badge */}
@@ -107,8 +107,8 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Right: Hero Image + Floating Card */}
-            <div className="animate-fade-in-up delay-200" style={{ position: 'relative' }}>
+            {/* Right: Hero Image */}
+            <div className="animate-fade-in-up delay-200 mobile-hide" style={{ position: 'relative' }}>
               <div style={{
                 borderRadius: 'var(--radius-xl)',
                 overflow: 'hidden',
@@ -116,47 +116,16 @@ const Home = () => {
                 border: '1px solid var(--color-outline-variant)',
               }}>
                 <img
-                  src="/assets/hero.png"
-                  alt="Students collaborating in a modern classroom"
+                  src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=1470&auto=format&fit=crop"
+                  alt="Students collaborating"
                   style={{ width: '100%', height: 'auto', display: 'block', aspectRatio: '4/3', objectFit: 'cover' }}
                 />
-              </div>
-
-              {/* Floating PDF Card */}
-              <div className="animate-float" style={{
-                position: 'absolute',
-                bottom: '-20px',
-                right: '-16px',
-                backgroundColor: 'var(--color-surface-container-lowest)',
-                border: '1px solid var(--color-outline-variant)',
-                borderRadius: 'var(--radius-xl)',
-                padding: '12px 16px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                boxShadow: 'var(--shadow-lg)',
-              }}>
-                <div style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: 'var(--radius-md)',
-                  backgroundColor: 'var(--color-primary-50)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'var(--color-primary-600)',
-                }}>
-                  <FileText size={18} />
-                </div>
-                <div>
-                  <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-on-surface)' }}>Physics_HW_01.pdf</p>
-                  <p style={{ fontSize: '11px', color: 'var(--color-outline)' }}>Uploaded 2m ago</p>
-                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
+
 
       {/* ═══ FEATURES SECTION ═══ */}
       <section id="about" style={{
@@ -232,10 +201,9 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ═══ COMMON MODULES SECTION ═══ */}
       <section style={{ paddingBottom: '80px', backgroundColor: 'var(--color-surface-container-low)' }}>
         <div className="container-max" style={{ textAlign: 'center' }}>
-          <CommonModules title="Master Any Subject" />
+          <CommonModules title="Master CS Subjects" />
         </div>
       </section>
 

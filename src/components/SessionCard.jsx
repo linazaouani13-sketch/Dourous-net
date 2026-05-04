@@ -1,103 +1,56 @@
 import React from 'react';
-import { FileText, Clock } from 'lucide-react';
-import { format } from 'date-fns';
+import { BookOpen, ChevronRight, Video, FileText } from 'lucide-react';
+import { format, isToday, isTomorrow } from 'date-fns';
 
 const SessionCard = ({ session }) => {
   const date = new Date(session.date_seance);
-  const month = format(date, 'MMM').toUpperCase();
-  const day = format(date, 'dd');
-  const time = format(date, 'hh:mm a');
+  
+  let dateLabel = format(date, 'MMM dd');
+  if (isToday(date)) dateLabel = 'Today';
+  else if (isTomorrow(date)) dateLabel = 'Tomorrow';
+
+  const timeRange = format(date, 'HH:mm') + ' - ' + format(new Date(date.getTime() + 60 * 60 * 1000), 'HH:mm');
+  const subject = session.professeurs?.specialite || "Lesson";
+  const isVideo = true; // Defaulting for visual variety
 
   return (
     <div style={{
       display: 'flex',
       alignItems: 'center',
-      gap: '12px',
-      padding: '12px',
-      borderRadius: 'var(--radius-lg)',
-      border: '1px solid var(--color-outline-variant)',
+      gap: '16px',
+      padding: '12px 16px',
+      borderRadius: 'var(--radius-xl)',
       backgroundColor: 'var(--color-surface-container-lowest)',
-      transition: 'box-shadow 0.2s',
+      border: '1px solid var(--color-outline-variant)',
       cursor: 'pointer',
+      transition: 'all 0.2s',
     }}
-    onMouseEnter={(e) => e.currentTarget.style.boxShadow = 'var(--shadow-md)'}
-    onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}
+    onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--color-primary-300)'}
+    onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--color-outline-variant)'}
     >
-      {/* Date Badge */}
       <div style={{
-        width: '48px',
-        height: '56px',
-        borderRadius: 'var(--radius-md)',
-        backgroundColor: 'var(--color-primary-50)',
-        border: '1px solid var(--color-primary-100)',
+        width: '40px',
+        height: '40px',
+        borderRadius: '12px',
+        backgroundColor: isVideo ? '#e0f2fe' : '#ecfdf5',
         display: 'flex',
-        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        flexShrink: 0,
+        color: isVideo ? '#0284c7' : '#059669',
       }}>
-        <span style={{
-          fontSize: '10px',
-          fontWeight: 700,
-          color: 'var(--color-primary-600)',
-          letterSpacing: '0.05em',
-        }}>
-          {month}
-        </span>
-        <span style={{
-          fontSize: '20px',
-          fontWeight: 700,
-          color: 'var(--color-on-surface)',
-          lineHeight: 1,
-        }}>
-          {day}
-        </span>
+        {isVideo ? <Video size={20} /> : <BookOpen size={20} />}
       </div>
 
-      {/* Session Info */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <h4 style={{
-          fontSize: '14px',
-          fontWeight: 600,
-          color: 'var(--color-on-surface)',
-          marginBottom: '2px',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-        }}>
-          {session.professeurs?.specialite || "General Support"}
+      <div style={{ flex: 1 }}>
+        <h4 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-on-surface)' }}>
+          {subject}
         </h4>
-        <p style={{
-          fontSize: '12px',
-          color: 'var(--color-on-surface-variant)',
-          marginBottom: '2px',
-        }}>
-          {session.professeurs?.nom} • {time}
+        <p style={{ fontSize: '12px', color: 'var(--color-outline)' }}>
+          {dateLabel} • {timeRange}
         </p>
       </div>
 
-      {/* Homework indicator */}
-      {session.devoir_url && (
-        <a
-          href={session.devoir_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: 'var(--radius-md)',
-            backgroundColor: 'var(--color-tertiary-50)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--color-tertiary-600)',
-            flexShrink: 0,
-          }}
-          title="View homework"
-        >
-          <FileText size={16} />
-        </a>
-      )}
+      <ChevronRight size={18} style={{ color: 'var(--color-outline)' }} />
     </div>
   );
 };

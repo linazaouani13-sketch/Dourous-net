@@ -37,7 +37,6 @@ const Navbar = () => {
   if (isDashboard) return null;
 
   const navLinks = [
-    { name: 'Courses', path: '/teachers' },
     { name: 'Teachers', path: '/teachers' },
     { name: 'Pricing', path: '/pricing' },
     { name: 'About', path: '/#about' },

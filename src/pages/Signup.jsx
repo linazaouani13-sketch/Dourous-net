@@ -201,27 +201,38 @@ const Signup = () => {
                     type="button"
                     onClick={() => setRole('student')}
                     style={{
-                      padding: '20px 12px',
-                      borderRadius: 'var(--radius-lg)',
+                      padding: '24px 16px',
+                      borderRadius: 'var(--radius-xl)',
                       border: role === 'student' 
                         ? '2px solid var(--color-primary-600)' 
                         : '1px solid var(--color-outline-variant)',
                       backgroundColor: role === 'student' 
                         ? 'var(--color-primary-50)' 
-                        : 'var(--color-surface-container-lowest)',
+                        : 'var(--color-surface)',
                       cursor: 'pointer',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
-                      gap: '8px',
+                      gap: '12px',
                       transition: 'all 0.2s',
                     }}
                   >
-                    <User size={20} color={role === 'student' ? 'var(--color-primary-600)' : 'var(--color-outline)'} />
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '12px',
+                      backgroundColor: role === 'student' ? 'var(--color-primary-600)' : 'var(--color-surface-container-low)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: role === 'student' ? 'white' : 'var(--color-outline)',
+                    }}>
+                      <User size={24} />
+                    </div>
                     <span style={{ 
                       fontSize: '14px', 
-                      fontWeight: 600, 
-                      color: role === 'student' ? 'var(--color-primary-600)' : 'var(--color-on-surface)' 
+                      fontWeight: 700, 
+                      color: role === 'student' ? 'var(--color-primary-700)' : 'var(--color-on-surface)' 
                     }}>
                       Student
                     </span>
@@ -230,27 +241,38 @@ const Signup = () => {
                     type="button"
                     onClick={() => setRole('teacher')}
                     style={{
-                      padding: '20px 12px',
-                      borderRadius: 'var(--radius-lg)',
+                      padding: '24px 16px',
+                      borderRadius: 'var(--radius-xl)',
                       border: role === 'teacher' 
                         ? '2px solid var(--color-primary-600)' 
                         : '1px solid var(--color-outline-variant)',
                       backgroundColor: role === 'teacher' 
                         ? 'var(--color-primary-50)' 
-                        : 'var(--color-surface-container-lowest)',
+                        : 'var(--color-surface)',
                       cursor: 'pointer',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
-                      gap: '8px',
+                      gap: '12px',
                       transition: 'all 0.2s',
                     }}
                   >
-                    <BookOpen size={20} color={role === 'teacher' ? 'var(--color-primary-600)' : 'var(--color-outline)'} />
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '12px',
+                      backgroundColor: role === 'teacher' ? 'var(--color-primary-600)' : 'var(--color-surface-container-low)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: role === 'teacher' ? 'white' : 'var(--color-outline)',
+                    }}>
+                      <BookOpen size={24} />
+                    </div>
                     <span style={{ 
                       fontSize: '14px', 
-                      fontWeight: 600, 
-                      color: role === 'teacher' ? 'var(--color-primary-600)' : 'var(--color-on-surface)' 
+                      fontWeight: 700, 
+                      color: role === 'teacher' ? 'var(--color-primary-700)' : 'var(--color-on-surface)' 
                     }}>
                       Tutor
                     </span>

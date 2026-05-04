@@ -68,11 +68,13 @@ const Login = () => {
         position: 'relative',
         zIndex: 1,
       }}>
-        <Logo 
-          fontSize="32px" 
-          color="var(--color-on-surface)" 
-          style={{ marginBottom: '8px' }} 
-        />
+        <div style={{ marginBottom: '32px' }}>
+          <Logo fontSize="24px" center={true} />
+        </div>
+
+        <h1 style={{ fontSize: '28px', fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: '8px' }}>
+          Sign In
+        </h1>
 
         <p style={{
           fontSize: '14px',

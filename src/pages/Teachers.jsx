@@ -1,15 +1,43 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
+import { useAuth } from '../context/AuthContext';
 import TeacherCard from '../components/TeacherCard';
 import BookingModal from '../components/BookingModal';
 import Footer from '../components/Footer';
 import { Search, Filter, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const Teachers = () => {
+  const { user, toggleFavorite } = useAuth();
+  const [searchParams] = useSearchParams();
+  const categoryParam = searchParams.get('category');
+  
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTeacher, setSelectedTeacher] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(categoryParam || '');
+
+  const favorites = user?.user_metadata?.favorites || [];
+
+  const handleToggleFavorite = async (teacherId) => {
+    if (!user) {
+      toast.error('Please log in to save favorites');
+      return;
+    }
+    try {
+      await toggleFavorite(teacherId);
+    } catch (error) {
+      toast.error('Failed to update favorites');
+    }
+  };
+
+  useEffect(() => {
+    // Update search query if URL parameter changes
+    if (categoryParam) {
+      setSearchQuery(categoryParam);
+    }
+  }, [categoryParam]);
 
   useEffect(() => {
     const fetchTeachers = async () => {
@@ -22,7 +50,7 @@ const Teachers = () => {
 
   const filteredTeachers = teachers.filter(t =>
     t.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    t.specialite.toLowerCase().includes(searchQuery.toLowerCase())
+    (t.matiere && t.matiere.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   if (loading) {
@@ -71,6 +99,8 @@ const Teachers = () => {
               key={teacher.id}
               teacher={teacher}
               onBook={() => setSelectedTeacher(teacher)}
+              isFavorite={favorites.includes(teacher.id)}
+              onToggleFavorite={() => handleToggleFavorite(teacher.id)}
             />
           ))}
         </div>
