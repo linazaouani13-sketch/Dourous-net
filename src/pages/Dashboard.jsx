@@ -877,6 +877,7 @@ const Dashboard = () => {
                  <p>Interactive Calendar View Coming Soon!</p>
                </div>
             </div>
+          </div>
         )}
 
         {/* ═══ FAVORITES TAB ═══ */}
