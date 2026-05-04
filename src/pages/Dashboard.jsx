@@ -1039,7 +1039,7 @@ const Dashboard = () => {
         {/* Floating Action Button (FAB) - Mobile only */}
         <button
           onClick={() => setActiveTab('Find Teachers')}
-          className="lg:hidden"
+          className="mobile-only"
           style={{
             position: 'fixed',
             right: '20px',
@@ -1059,6 +1059,22 @@ const Dashboard = () => {
         >
           <Plus size={28} />
         </button>
+
+        {/* Mobile Bottom Navigation */}
+        <div className="mobile-only">
+          <nav className="bottom-nav">
+            {sidebarLinks.filter(l => l.mobile).map(link => (
+              <button
+                key={link.name}
+                onClick={() => setActiveTab(link.name)}
+                className={`bottom-nav-link ${activeTab === link.name ? 'bottom-nav-link--active' : ''}`}
+              >
+                {link.icon}
+                <span>{link.name}</span>
+              </button>
+            ))}
+          </nav>
+        </div>
 
         {/* Footer */}
         <div style={{ marginTop: '60px' }}>
