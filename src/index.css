@@ -477,6 +477,44 @@
     background-color: var(--color-tertiary-50);
     color: var(--color-tertiary-600);
   }
+
+  /* ─── Bottom Nav (Mobile) ─── */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background-color: var(--color-surface-container-lowest);
+    border-top: 1px solid var(--color-outline-variant);
+    display: none;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 8px;
+    z-index: 50;
+    backdrop-filter: blur(12px);
+  }
+
+  .bottom-nav-link {
+    display: flex;
+    flex-direction: column;
+    alignItems: center;
+    gap: 4px;
+    color: var(--color-on-surface-variant);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 8px;
+    transition: color 0.2s;
+  }
+
+  .bottom-nav-link--active {
+    color: var(--color-primary-600);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -578,5 +616,26 @@
 
   .sidebar {
     display: none;
+  }
+
+  .bottom-nav {
+    display: flex;
+  }
+
+  .dashboard-main {
+    margin-left: 0 !important;
+    padding: 20px 16px 80px !important;
+  }
+
+  .grid-2-col {
+    grid-template-columns: 1fr !important;
+  }
+
+  .grid-responsive {
+    grid-template-columns: 1fr !important;
+  }
+
+  .mobile-hide {
+    display: none !important;
   }
 }

@@ -222,16 +222,16 @@ const Dashboard = () => {
   }
 
   const sidebarLinks = role === 'teacher' ? [
-    { name: 'Dashboard', icon: <LayoutDashboard size={20} /> },
-    { name: 'My Students', icon: <Users size={20} /> },
-    { name: 'Schedule', icon: <Calendar size={20} /> },
-    { name: 'Settings', icon: <Settings size={20} /> },
+    { name: 'Dashboard', icon: <LayoutDashboard size={20} />, mobile: true },
+    { name: 'My Students', icon: <Users size={20} />, mobile: true },
+    { name: 'Schedule', icon: <Calendar size={20} />, mobile: true },
+    { name: 'Settings', icon: <Settings size={20} />, mobile: true },
   ] : [
-    { name: 'Dashboard', icon: <LayoutDashboard size={20} /> },
-    { name: 'My Sessions', icon: <Calendar size={20} /> },
-    { name: 'Find Teachers', icon: <Users size={20} /> },
-    { name: 'Favorites', icon: <Heart size={20} /> },
-    { name: 'Settings', icon: <Settings size={20} /> },
+    { name: 'Dashboard', icon: <LayoutDashboard size={20} />, mobile: true },
+    { name: 'My Sessions', icon: <Calendar size={20} />, mobile: true },
+    { name: 'Find Teachers', icon: <Users size={20} />, mobile: true },
+    { name: 'Favorites', icon: <Heart size={20} />, mobile: false },
+    { name: 'Settings', icon: <Settings size={20} />, mobile: true },
   ];
 
   const commonModules = [
@@ -343,8 +343,22 @@ const Dashboard = () => {
         </div>
       </aside>
 
+      {/* ═══ MOBILE BOTTOM NAV ═══ */}
+      <nav className="bottom-nav">
+        {sidebarLinks.filter(l => l.mobile).map((link) => (
+          <button
+            key={link.name}
+            onClick={() => setActiveTab(link.name)}
+            className={`bottom-nav-link ${activeTab === link.name ? 'bottom-nav-link--active' : ''}`}
+          >
+            {React.cloneElement(link.icon, { size: 24 })}
+            <span style={{ marginTop: '2px' }}>{link.name.split(' ')[link.name.split(' ').length - 1]}</span>
+          </button>
+        ))}
+      </nav>
+
       {/* ═══ MAIN CONTENT ═══ */}
-      <main style={{
+      <main className="dashboard-main" style={{
         flex: 1,
         marginLeft: '240px',
         padding: '32px 40px',
@@ -375,7 +389,7 @@ const Dashboard = () => {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {/* Search */}
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative' }} className="mobile-hide">
               <Search size={16} style={{
                 position: 'absolute',
                 right: '14px',
@@ -418,7 +432,7 @@ const Dashboard = () => {
 
         {/* ═══ OVERVIEW TAB ═══ */}
         {activeTab === 'Dashboard' && (
-          <div style={{
+          <div className="grid-2-col" style={{
             display: 'grid',
             gridTemplateColumns: role === 'teacher' ? '1fr' : '1fr 340px',
             gap: '32px',
@@ -577,7 +591,7 @@ const Dashboard = () => {
                     </button>
                   </div>
 
-                  <div style={{
+                  <div className="grid-2-col" style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(2, 1fr)',
                     gap: '16px',
@@ -762,9 +776,27 @@ const Dashboard = () => {
                 Find the perfect educator to help you master your subjects.
               </p>
             </div>
-            <div style={{
+            {favorites.length > 0 ? (
+              <div className="grid-responsive" style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gap: '16px',
+                marginBottom: '32px'
+              }}>
+                {teachers.filter(t => favorites.includes(t.id)).map(teacher => (
+                  <TeacherCard
+                    key={teacher.id}
+                    teacher={teacher}
+                    onBook={() => setSelectedTeacher(teacher)}
+                    isFavorite={true}
+                    onToggleFavorite={() => toggleFavorite(teacher.id)}
+                  />
+                ))}
+              </div>
+            ) : null}
+            <div className="grid-responsive" style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
               gap: '16px',
             }}>
               {teachers.map(teacher => (
@@ -845,6 +877,52 @@ const Dashboard = () => {
                  <p>Interactive Calendar View Coming Soon!</p>
                </div>
             </div>
+          </div>
+        {/* ═══ FAVORITES TAB ═══ */}
+        {activeTab === 'Favorites' && (
+          <div className="animate-fade-in">
+            <div style={{ marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: '8px' }}>
+                Your Favorites
+              </h2>
+              <p style={{ fontSize: '14px', color: 'var(--color-on-surface-variant)' }}>
+                Your curated list of preferred tutors.
+              </p>
+            </div>
+            {favorites.length > 0 ? (
+              <div className="grid-responsive" style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gap: '16px',
+              }}>
+                {teachers.filter(t => favorites.includes(t.id)).map(teacher => (
+                  <TeacherCard
+                    key={teacher.id}
+                    teacher={teacher}
+                    onBook={() => setSelectedTeacher(teacher)}
+                    isFavorite={true}
+                    onToggleFavorite={() => toggleFavorite(teacher.id)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '60px 0', backgroundColor: 'var(--color-surface-container-low)', borderRadius: 'var(--radius-xl)' }}>
+                <Heart size={48} style={{ color: 'var(--color-outline-variant)', marginBottom: '16px' }} />
+                <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--color-on-surface)', marginBottom: '8px' }}>
+                  No favorites yet
+                </h3>
+                <p style={{ fontSize: '14px', color: 'var(--color-outline)', marginBottom: '16px' }}>
+                  Click the heart icon on any teacher to save them here.
+                </p>
+                <button
+                  className="btn-primary"
+                  onClick={() => setActiveTab('Find Teachers')}
+                  style={{ padding: '10px 20px' }}
+                >
+                  Explore Tutors
+                </button>
+              </div>
+            )}
           </div>
         )}
 
