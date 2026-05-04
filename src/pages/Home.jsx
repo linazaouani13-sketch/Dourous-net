@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldCheck, Calendar, FileText, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import CommonModules from '../components/CommonModules';
 import Footer from '../components/Footer';
 
 const Home = () => {
@@ -228,6 +229,13 @@ const Home = () => {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ═══ COMMON MODULES SECTION ═══ */}
+      <section style={{ paddingBottom: '80px', backgroundColor: 'var(--color-surface-container-low)' }}>
+        <div className="container-max" style={{ textAlign: 'center' }}>
+          <CommonModules title="Master Any Subject" />
         </div>
       </section>
 

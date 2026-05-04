@@ -16,13 +16,18 @@ const LoadingPage = ({ isExiting, readyToProceed, onProceed }) => {
         {/* Logo with subtle glow */}
         <div className="relative">
           <div className="absolute inset-0 bg-white/5 blur-3xl rounded-full animate-pulse scale-150" />
-          <Logo className="w-48 h-48 relative z-10 animate-bounce" />
+          <Logo 
+            className="relative z-10 animate-bounce" 
+            fontSize="48px" 
+            imgHeight="80px"
+            color="white" 
+            center={true}
+          />
         </div>
 
         {/* Content */}
         <div className="text-center space-y-6">
           <div className="space-y-2">
-            <h2 className="text-4xl font-bold text-white tracking-tighter">Dourous-Net</h2>
             <div className="flex items-center justify-center gap-2">
               {!readyToProceed && [0, 1, 2].map((i) => (
                 <div 

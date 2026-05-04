@@ -56,32 +56,14 @@ const SplashScreen = ({ onDismiss }) => {
       }} />
 
       <div className="animate-fade-in-up" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 1 }}>
-        {/* Icon */}
-        <div style={{
-          width: '64px',
-          height: '64px',
-          borderRadius: 'var(--radius-xl)',
-          backgroundColor: 'var(--color-primary-600)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: '24px',
-          boxShadow: '0 8px 32px rgba(0, 88, 190, 0.25)',
-        }}>
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-            <path d="M12 3L1 9L5 11.18V17.18L12 21L19 17.18V11.18L21 10.09V17H23V9L12 3ZM18.82 9L12 12.72L5.18 9L12 5.28L18.82 9ZM17 15.99L12 18.72L7 15.99V12.27L12 15L17 12.27V15.99Z" fill="white"/>
-          </svg>
-        </div>
-
-        <h1 style={{
-          fontSize: '32px',
-          fontWeight: 700,
-          color: 'var(--color-on-surface)',
-          letterSpacing: '-0.02em',
-          marginBottom: '8px',
-        }}>
-          Dourous-Net
-        </h1>
+        <Logo 
+          fontSize="48px" 
+          imgHeight="80px"
+          color="var(--color-on-surface)" 
+          className="animate-bounce" 
+          center={true}
+          style={{ marginBottom: '24px' }} 
+        />
 
         <p style={{
           fontSize: '14px',
