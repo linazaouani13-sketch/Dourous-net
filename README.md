@@ -12,8 +12,6 @@ Conformément aux exigences du projet, l'architecture est modélisée comme suit
 - **Table C (Interactions)** : `seances` (Lien entre élève et professeur avec date et statut).
 - **Storage (Fichiers)** : Bucket `devoirs` (Stockage des scans PDF des devoirs).
 
----
-
 ## 🏛️ Analyse d'Architecture (Rapport Architecte)
 
 ### 1. Pourquoi Vercel + Supabase vs Serveur Classique ? (CAPEX/OPEX)
@@ -30,11 +28,5 @@ Vercel gère la scalabilité de manière **horizontale et automatique** via des 
 - **Données Structurées** : Ce sont les informations stockées dans les tables PostgreSQL de Supabase (`eleves`, `professeurs`, `seances`). Elles suivent un schéma strict (ID, Clés étrangères, Dates).
 - **Données Non-structurées** : Ce sont les fichiers PDF des devoirs stockés dans **Supabase Storage**. Contrairement à une base de données, ces fichiers n'ont pas de structure interne prévisible pour le système, ils sont donc gérés comme des "objets" (BLOBs).
 
----
-
-
-3. **Déploiement CI/CD** :
-   Connectez votre repo GitHub à Vercel. Chaque `git push` déclenchera un nouveau build.
-
-
+3. **Déploiement CI/CD** : Connectez votre repo GitHub à Vercel. Chaque `git push` déclenchera un nouveau build.
 Construit avec l'approche **Vibe Coding** pour le module Architecture Cloud.
