@@ -7,7 +7,7 @@ import Footer from '../components/Footer';
 
 const Home = () => {
   const { user } = useAuth();
-
+//add new fea
   const features = [
     {
       title: "Verified Teachers",
@@ -28,7 +28,7 @@ const Home = () => {
       colorClass: 'icon-circle-orange',
     },
   ];
-
+// stats 
   const stats = [
     { value: "50k+", label: "ACTIVE STUDENTS" },
     { value: "1,200+", label: "EXPERT TEACHERS" },
@@ -207,7 +207,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ═══ STATS SECTION ═══ */}
+      {/* ═══ STATs SECTION ═══ */}
       <section style={{ paddingTop: '64px', paddingBottom: '64px' }}>
         <div className="container-max">
           <div style={{
@@ -244,3 +244,4 @@ const Home = () => {
 };
 
 export default Home;
+// done
